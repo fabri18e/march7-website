@@ -1,0 +1,345 @@
+[
+  {
+    "id": "wireless-earbuds-pro",
+    "name": "Wireless Earbuds Pro X1",
+    "price": 34.99,
+    "oldPrice": 59.99,
+    "description": "The Pro X1 delivers premium sound at a fraction of the brand-name price. Active Noise Cancellation blocks up to 25dB, dual-driver technology produces crisp highs and punchy bass, and the charging case extends total playtime to 30 hours. IPX5 water resistance means sweat and rain are no concern. Touch controls on each earbud let you manage calls, music, and your assistant without touching your phone.",
+    "shortDesc": "True wireless earbuds with ANC, 30h battery and IPX5 waterproofing.",
+    "category": "Audio",
+    "tags": ["wireless", "ANC", "earbuds", "bluetooth", "IPX5", "gaming"],
+    "badge": "Best Seller",
+    "image": null,
+    "images": [],
+    "freeShipping": false,
+    "supplierUrl": null,
+    "supplierPrice": null,
+    "features": [
+      "Active Noise Cancellation up to 25dB",
+      "30 hours total battery with charging case",
+      "IPX5 water resistance for workouts",
+      "Bluetooth 5.3 with multipoint connection",
+      "10-minute quick charge = 1.5 hours playback",
+      "3 ear tip sizes included"
+    ],
+    "specs": [
+      ["Driver Size", "10mm dynamic + 6mm balanced armature"],
+      ["Frequency Response", "20Hz – 20kHz"],
+      ["ANC Reduction", "Up to 25dB"],
+      ["Battery (buds)", "8 hours"],
+      ["Battery (case)", "22 hours additional"],
+      ["Charging", "USB-C, 10 min = 1.5h playback"],
+      ["Connectivity", "Bluetooth 5.3, Multipoint"],
+      ["Water Resistance", "IPX5"],
+      ["Weight per bud", "5.2g"]
+    ],
+    "pros": [
+      "Exceptional ANC for the price point",
+      "Multipoint connects to 2 devices simultaneously",
+      "IPX5 — safe for workouts and light rain",
+      "Quick charge: 10 min gives 1.5h playback",
+      "Comfortable fit with 3 ear tip sizes included"
+    ],
+    "cons": [
+      "No wireless charging case",
+      "Ambient sound mode sounds slightly artificial",
+      "App is basic compared to premium brands"
+    ],
+    "reviews": [
+      {
+        "id": "r1",
+        "name": "Andres M.",
+        "rating": 5,
+        "date": "May 2025",
+        "text": "Sound quality rivals my old $120 earbuds. ANC is legitimately good — blocks out my open office completely."
+      },
+      {
+        "id": "r2",
+        "name": "Sofia R.",
+        "rating": 4,
+        "date": "April 2025",
+        "text": "Great value. Fit is comfortable and they stay in during runs. Wish the case had wireless charging but at this price it's hard to complain."
+      },
+      {
+        "id": "r3",
+        "name": "James K.",
+        "rating": 5,
+        "date": "March 2025",
+        "text": "Bought these skeptically. Immediately returned my $90 pair. These just sound better."
+      }
+    ]
+  },
+  {
+    "id": "mechanical-keyboard-tkl",
+    "name": "Compact TKL Mechanical Keyboard",
+    "price": 49.99,
+    "oldPrice": 79.99,
+    "description": "A tenkeyless mechanical keyboard built for typists and gamers who demand feel without breaking the bank. Hot-swappable PCB lets you change switches without soldering. Pre-lubed stabilizers eliminate rattle out of the box. Gasket-mounted design gives a slight bounce that reduces typing fatigue on long sessions. Full per-key RGB with 18 built-in effects.",
+    "shortDesc": "TKL layout, hot-swappable switches, RGB backlight, USB-C.",
+    "category": "Peripherals",
+    "tags": ["keyboard", "mechanical", "gaming", "RGB", "hot-swap", "TKL"],
+    "badge": "Sale",
+    "image": null,
+    "images": [],
+    "freeShipping": false,
+    "supplierUrl": null,
+    "supplierPrice": null,
+    "features": [
+      "Hot-swappable PCB — change switches without soldering",
+      "PBT double-shot keycaps, shine-through legends",
+      "Gasket mount reduces harsh typing feel",
+      "Pre-lubed stabilizers, rattle-free from day one",
+      "Per-key RGB with 18 built-in effects",
+      "Full NKRO anti-ghosting"
+    ],
+    "specs": [
+      ["Layout", "TKL (87 keys)"],
+      ["Switch Type", "Hot-swappable, 3-pin & 5-pin"],
+      ["Included Switches", "Red Linear (pre-lubed)"],
+      ["Actuation Force", "45g"],
+      ["Keycaps", "PBT double-shot, shine-through legends"],
+      ["Lighting", "Per-key RGB, 16.8M colors"],
+      ["Connection", "USB-C detachable cable"],
+      ["Anti-Ghosting", "Full NKRO"],
+      ["Dimensions", "360 × 130 × 38mm"]
+    ],
+    "pros": [
+      "Hot-swap socket — change switches in seconds, no soldering",
+      "PBT keycaps resist shine and feel premium",
+      "Gasket mount reduces harsh typing feel",
+      "Pre-lubed stabs are rattle-free from day one",
+      "USB-C is modern and cable is replaceable"
+    ],
+    "cons": [
+      "No wireless option",
+      "Software for macros is Windows-only",
+      "RGB bleeds slightly at keycap edges"
+    ],
+    "reviews": [
+      {
+        "id": "r4",
+        "name": "Carlos V.",
+        "rating": 5,
+        "date": "June 2025",
+        "text": "Swapped to Boba U4 tactiles and this board feels incredible. Hot-swap is a game changer at this price."
+      },
+      {
+        "id": "r5",
+        "name": "Priya N.",
+        "rating": 4,
+        "date": "May 2025",
+        "text": "Great for the office. Quieter than expected with the stock reds. Build quality is surprisingly solid."
+      },
+      {
+        "id": "r6",
+        "name": "Lucas T.",
+        "rating": 5,
+        "date": "April 2025",
+        "text": "PBT caps, hot-swap, gasket mount — I was paying 3x this price for all three features. Done."
+      }
+    ]
+  },
+  {
+    "id": "usb-c-hub-7in1",
+    "name": "7-in-1 USB-C Hub",
+    "price": 27.99,
+    "oldPrice": 39.99,
+    "description": "Turns a single USB-C port into a full workstation. The 4K@60Hz HDMI output handles any modern monitor. 100W Power Delivery pass-through charges your laptop at full speed while you work. Two USB-A 3.0 ports push up to 5Gbps for fast file transfers. Built-in SD and MicroSD card readers support UHS-I for fast photo imports. The aluminum shell dissipates heat and survives daily bag-tossing.",
+    "shortDesc": "4K HDMI, 100W PD, SD/MicroSD, 3× USB-A — compact aluminum body.",
+    "category": "Accessories",
+    "tags": ["USB-C", "hub", "HDMI", "4K", "MacBook", "minimal"],
+    "badge": "New",
+    "image": null,
+    "images": [],
+    "freeShipping": false,
+    "supplierUrl": null,
+    "supplierPrice": null,
+    "features": [
+      "4K@60Hz HDMI output",
+      "100W Power Delivery pass-through",
+      "3× USB-A 3.0 at 5Gbps",
+      "SD + MicroSD card readers (UHS-I, 104MB/s)",
+      "Aluminum body for heat dissipation",
+      "Plug-and-play on Mac, Windows, iPad, ChromeOS"
+    ],
+    "specs": [
+      ["HDMI", "4K @ 60Hz, HDCP 2.2"],
+      ["USB-A ports", "3× USB-A 3.0 (5Gbps)"],
+      ["Power Delivery", "100W pass-through"],
+      ["Card Readers", "SD + MicroSD (UHS-I, 104MB/s)"],
+      ["Host Connection", "USB-C 3.1 Gen 2"],
+      ["Cable Length", "15cm fixed"],
+      ["Material", "Aluminum alloy"],
+      ["Dimensions", "110 × 35 × 14mm"],
+      ["Compatibility", "Mac, Windows, iPad Pro, ChromeOS"]
+    ],
+    "pros": [
+      "4K@60Hz HDMI — no resolution compromises",
+      "100W PD keeps your laptop fully charged while in use",
+      "Aluminum body stays cool even under sustained load",
+      "UHS-I card readers are fast enough for RAW photo work",
+      "Works plug-and-play on Mac, Windows, and iPad"
+    ],
+    "cons": [
+      "Fixed cable can't be replaced if damaged",
+      "Only one HDMI port — not for dual-monitor setups",
+      "USB-A and HDMI share bandwidth under heavy simultaneous use"
+    ],
+    "reviews": [
+      {
+        "id": "r7",
+        "name": "Mia H.",
+        "rating": 5,
+        "date": "June 2025",
+        "text": "MacBook Pro user — this replaced a $90 branded hub perfectly. 4K monitor, charging, and SD card all at once with zero issues."
+      },
+      {
+        "id": "r8",
+        "name": "Daniel R.",
+        "rating": 4,
+        "date": "May 2025",
+        "text": "Does everything it claims. Runs warm but not hot. Only gripe is the fixed cable."
+      }
+    ]
+  },
+  {
+    "id": "portable-charger-20k",
+    "name": "20,000mAh Power Bank",
+    "price": 29.99,
+    "oldPrice": 44.99,
+    "description": "Twenty thousand milliamp-hours of compact, airline-approved power. The 65W USB-C port charges a MacBook Air from flat in just over two hours, and a modern Android flagship in about 45 minutes. A second USB-C at 18W handles phones and earbuds. USB-A supports 22.5W for legacy devices. The slim 15mm profile slips into the same pocket as your phone.",
+    "shortDesc": "65W fast charge, dual USB-C + USB-A, charges a MacBook in 2h.",
+    "category": "Accessories",
+    "tags": ["power bank", "fast charge", "65W", "travel", "MacBook", "minimal"],
+    "badge": "Sale",
+    "image": null,
+    "images": [],
+    "freeShipping": false,
+    "supplierUrl": null,
+    "supplierPrice": null,
+    "features": [
+      "65W USB-C charges a MacBook Air in ~2 hours",
+      "Three ports active simultaneously",
+      "Slim 15mm profile — fits in a jeans pocket",
+      "Under 100Wh — airline carry-on approved",
+      "Recharges itself in ~1.5h at 65W",
+      "LED fuel gauge indicator"
+    ],
+    "specs": [
+      ["Capacity", "20,000mAh / 74Wh"],
+      ["USB-C 1 (output)", "65W PD 3.0"],
+      ["USB-C 2 (output)", "18W PD"],
+      ["USB-A (output)", "22.5W"],
+      ["Input (charging)", "65W USB-C"],
+      ["Simultaneous output", "Yes, all ports active"],
+      ["Thickness", "15mm"],
+      ["Weight", "360g"],
+      ["Airline compliant", "Yes (under 100Wh)"]
+    ],
+    "pros": [
+      "True 65W output charges laptops, not just phones",
+      "Slim 15mm profile fits in a jeans pocket",
+      "All three ports can be used at the same time",
+      "Under 100Wh limit — carry-on safe on all airlines",
+      "Recharges itself fully in ~1.5h at 65W"
+    ],
+    "cons": [
+      "Slightly heavy at 360g compared to budget rivals",
+      "No wireless charging output",
+      "LED indicator shows quarters, not exact percentage"
+    ],
+    "reviews": [
+      {
+        "id": "r9",
+        "name": "Elena S.",
+        "rating": 5,
+        "date": "June 2025",
+        "text": "Charges my M2 MacBook Air as fast as the wall adapter. Traveled with it for 2 weeks — it was the last thing I needed to worry about."
+      },
+      {
+        "id": "r10",
+        "name": "Omar B.",
+        "rating": 5,
+        "date": "April 2025",
+        "text": "The slimmest 20k bank I've found. Previous one was twice as thick. Huge upgrade for daily carry."
+      },
+      {
+        "id": "r11",
+        "name": "Rachel W.",
+        "rating": 4,
+        "date": "March 2025",
+        "text": "Works great. Would give 5 stars if it had wireless charging but for this price that's a minor ask."
+      }
+    ]
+  },
+  {
+    "id": "rgb-gaming-mouse",
+    "name": "Precision Gaming Mouse",
+    "price": 32.99,
+    "oldPrice": null,
+    "description": "Built around the PAW3395 optical sensor — the same sensor found in mice costing three times as much. Zero acceleration and perfect 1:1 tracking at any DPI setting. The honeycomb shell shaves the weight to 60 grams. Six programmable buttons with hardware memory mean your settings follow the mouse to any PC. Ambidextrous shape fits left- and right-handed users.",
+    "shortDesc": "PAW3395 sensor, 26000 DPI, 6 programmable buttons, 60g ultralight.",
+    "category": "Peripherals",
+    "tags": ["mouse", "gaming", "RGB", "wireless", "PAW3395", "ultralight"],
+    "badge": "New",
+    "image": null,
+    "images": [],
+    "freeShipping": false,
+    "supplierUrl": null,
+    "supplierPrice": null,
+    "features": [
+      "PAW3395 flagship optical sensor",
+      "60g ultralight honeycomb shell",
+      "6 programmable buttons with hardware memory",
+      "Ambidextrous — left and right handed",
+      "PTFE feet for smooth glide",
+      "1.8m flexible paracord cable"
+    ],
+    "specs": [
+      ["Sensor", "PAW3395 optical"],
+      ["Max DPI", "26,000 DPI (adjustable in 50 DPI steps)"],
+      ["Polling Rate", "1000Hz (1ms)"],
+      ["Buttons", "6 programmable"],
+      ["Weight", "60g"],
+      ["Cable", "1.8m paracord (flexible)"],
+      ["Switches", "Huano 60M click"],
+      ["Feet", "100% PTFE"],
+      ["Shape", "Ambidextrous"]
+    ],
+    "pros": [
+      "PAW3395 sensor is best-in-class — no spin-out, no acceleration",
+      "60g weight reduces fatigue during long sessions",
+      "Paracord cable feels almost wireless",
+      "PTFE feet glide smoothly straight out of the box",
+      "Hardware memory stores DPI/macros without software installed"
+    ],
+    "cons": [
+      "Ambidextrous shape doesn't suit large hands as well as ergonomic options",
+      "Side buttons could have more tactile feedback",
+      "RGB is subtle — not ideal if you want a light show"
+    ],
+    "reviews": [
+      {
+        "id": "r12",
+        "name": "Tyler G.",
+        "rating": 5,
+        "date": "May 2025",
+        "text": "PAW3395 at this price is absurd. Tracking is flawless. My $80 mouse is gathering dust."
+      },
+      {
+        "id": "r13",
+        "name": "Natalia P.",
+        "rating": 5,
+        "date": "May 2025",
+        "text": "Switched from an ergonomic mouse and love the ambi shape. Light enough that I forget I'm holding it."
+      },
+      {
+        "id": "r14",
+        "name": "David L.",
+        "rating": 4,
+        "date": "April 2025",
+        "text": "Great sensor, great price. Cable is notably flexible. Minor gripe: side buttons feel a bit plasticky."
+      }
+    ]
+  }
+]
