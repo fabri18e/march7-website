@@ -210,7 +210,7 @@ export async function sendOrderConfirmation({
     </div>
     <div style="padding:0 32px 32px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/account`, 'View My Order →')}
+      ${ctaButton(`${SITE_URL}/track`, 'View My Order →')}
     </div>
     <div style="margin:0 32px 28px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 18px">
       <p style="margin:0;font-size:13px;color:#15803D;text-align:center">
@@ -237,7 +237,7 @@ export async function sendOrderProcessing({
     </div>
     <div style="padding:0 32px 32px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/account`, 'Track My Order →')}
+      ${ctaButton(`${SITE_URL}/track`, 'Track My Order →')}
     </div>`);
 
   return sendEmail({ to, subject: 'Your March7 order is being processed ⚙️', html });
@@ -270,7 +270,7 @@ export async function sendOrderShipped({
     ${trackingBlock}
     <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/account`, 'Track My Order →')}
+      ${ctaButton(`${SITE_URL}/track`, 'Track My Order →')}
     </div>`);
 
   return sendEmail({ to, subject: 'Your March7 order has shipped 📦', html });
@@ -308,7 +308,7 @@ export async function sendOrderDelivered({
     </div>` : ''}
 
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/account`, 'View My Orders →')}
+      ${ctaButton(`${SITE_URL}/track`, 'View My Orders →')}
     </div>
     <div style="margin:0 32px 28px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px 18px;text-align:center">
       <p style="margin:0;font-size:13px;color:#C2410C">

@@ -13,6 +13,7 @@ export default function CartDrawer() {
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [error, setError] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
     if (!isOpen || items.length === 0) return;
@@ -187,10 +188,25 @@ export default function CartDrawer() {
               Have a promo code? Enter it at checkout.
             </p>
 
+            <label className="flex items-start gap-2.5 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={e => setTermsAccepted(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-accent cursor-pointer flex-shrink-0"
+              />
+              <span className="text-xs text-gray-500 leading-relaxed">
+                I agree to the{' '}
+                <a href="/legal/terms" target="_blank" className="text-accent hover:underline font-medium">Terms of Service</a>
+                {' '}and{' '}
+                <a href="/legal/returns" target="_blank" className="text-accent hover:underline font-medium">Return Policy</a>
+              </span>
+            </label>
+
             <button
               onClick={handleCheckout}
-              disabled={loading}
-              className="w-full bg-accent hover:bg-accent-hover disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+              disabled={loading || !termsAccepted}
+              className="w-full bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -204,6 +220,7 @@ export default function CartDrawer() {
 
             {process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID && (
               <button
+                disabled={paypalLoading || !termsAccepted}
                 onClick={async () => {
                   setPaypalLoading(true);
                   setError('');
@@ -221,8 +238,7 @@ export default function CartDrawer() {
                     setPaypalLoading(false);
                   }
                 }}
-                disabled={paypalLoading}
-                className="w-full bg-[#FFC439] hover:bg-[#f0b429] disabled:opacity-60 text-[#003087] font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                className="w-full bg-[#FFC439] hover:bg-[#f0b429] disabled:opacity-50 disabled:cursor-not-allowed text-[#003087] font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 {paypalLoading ? (
                   <div className="w-4 h-4 border-2 border-[#003087]/30 border-t-[#003087] rounded-full animate-spin"/>

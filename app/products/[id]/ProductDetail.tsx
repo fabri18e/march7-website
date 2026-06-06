@@ -31,7 +31,19 @@ function useCountdown(productId: string) {
 
 function useViewers(productId: string) {
   const base = productId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  const [count] = useState(() => 8 + (base % 17));
+  const initial = 8 + (base % 17);
+  const [count, setCount] = useState(initial);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCount(prev => {
+        const change = Math.random() < 0.5 ? 1 : -1;
+        return Math.min(32, Math.max(5, prev + change));
+      });
+    }, Math.floor(Math.random() * 8000) + 7000); // every 7–15 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   return count;
 }
 
