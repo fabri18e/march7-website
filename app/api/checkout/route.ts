@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
         email: userEmail || '',
         cart: JSON.stringify(items.map(i => ({ id: i.id, qty: i.qty }))),
       },
+      allow_promotion_codes: true,
       shipping_address_collection: {
         allowed_countries: ['US', 'CA', 'MX', 'GB', 'AU', 'DE', 'FR', 'ES', 'IT', 'BR'],
       },

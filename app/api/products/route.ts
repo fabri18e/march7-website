@@ -21,6 +21,6 @@ export async function GET() {
   const products = [...(supabaseProducts || []), ...jsonOnly];
 
   return NextResponse.json({ products }, {
-    headers: { 'Cache-Control': 'no-store' },
+    headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=30' },
   });
 }

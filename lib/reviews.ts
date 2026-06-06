@@ -28,7 +28,7 @@ export function getReviews(productId: string): UserReview[] {
 
 export function addReview(
   productId: string,
-  data: { name: string; rating: number; text: string }
+  data: { name: string; rating: number; text: string; images?: string[] }
 ): UserReview {
   const reviews = getReviews(productId);
   const newReview: UserReview = {
@@ -39,6 +39,7 @@ export function addReview(
     text: data.text,
     date: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     sessionId: getSessionId(),
+    ...(data.images?.length ? { images: data.images } : {}),
   };
   reviews.unshift(newReview);
   localStorage.setItem(reviewsKey(productId), JSON.stringify(reviews));

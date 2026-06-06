@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { PageLoader } from '@/components/Spinner';
 import { useAuth } from '@/context/AuthContext';
 import { getSupabase } from '@/lib/supabase';
 
@@ -51,11 +52,7 @@ export default function OrdersPage() {
   }, [user]);
 
   if (authLoading || loading) {
-    return (
-      <div className="max-w-3xl mx-auto px-6 py-20 text-center text-gray-400">
-        Loading your orders...
-      </div>
-    );
+    return <div className="max-w-3xl mx-auto px-6"><PageLoader /></div>;
   }
 
   return (

@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQty, total, count } = useCart();
   const { user } = useAuth();
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,13 +16,7 @@ export default function CartDrawer() {
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  const requireLogin = () => {
-    closeCart();
-    router.push('/auth');
-  };
-
   const handleCheckout = async () => {
-    if (!user) { requireLogin(); return; }
     setLoading(true);
     setError('');
     try {
@@ -33,8 +25,8 @@ export default function CartDrawer() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items,
-          userId: user?.id,
-          userEmail: user?.email,
+          userId: user?.id || '',
+          userEmail: user?.email || '',
         }),
       });
       const data = await res.json();
@@ -137,16 +129,16 @@ export default function CartDrawer() {
             </div>
             <p className="text-xs text-gray-400">Taxes and shipping calculated at checkout</p>
 
-            {!user && (
-              <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 text-xs text-amber-700">
-                You need an account to checkout.{' '}
-                <button onClick={requireLogin} className="font-semibold underline">Sign in or register</button>
-              </div>
-            )}
-
             {error && (
               <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
             )}
+
+            <p className="text-xs text-gray-400 flex items-center gap-1">
+              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 014-4z"/>
+              </svg>
+              Have a promo code? Enter it at checkout.
+            </p>
 
             <button
               onClick={handleCheckout}
@@ -166,14 +158,13 @@ export default function CartDrawer() {
             {process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID && (
               <button
                 onClick={async () => {
-                  if (!user) { requireLogin(); return; }
                   setPaypalLoading(true);
                   setError('');
                   try {
                     const res = await fetch('/api/paypal/create-order', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ items, userId: user.id, userEmail: user.email }),
+                      body: JSON.stringify({ items, userId: user?.id || '', userEmail: user?.email || '' }),
                     });
                     const data = await res.json();
                     if (data.approveUrl) window.location.href = data.approveUrl;

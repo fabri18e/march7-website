@@ -19,10 +19,21 @@ const BADGE_STYLES: Record<string, string> = {
   'New': 'bg-green-100 text-green-700',
 };
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, allProducts }: { product: Product; allProducts?: Product[] }) {
   const avg = avgRating(product.reviews);
-  const savePct = product.oldPrice && product.oldPrice > product.price
-    ? Math.round((1 - product.price / product.oldPrice) * 100)
+
+  // For bundles: compute original total and discounted price from live item prices
+  const bundleOriginalTotal = product.isBundle && product.bundleItems?.length && allProducts?.length
+    ? product.bundleItems.reduce((s, id) => s + (allProducts.find(p => p.id === id)?.price ?? 0), 0)
+    : null;
+  const effectiveBundlePrice = bundleOriginalTotal && (product.bundleDiscount ?? 0) > 0
+    ? Math.round(bundleOriginalTotal * (1 - (product.bundleDiscount ?? 0) / 100) * 100) / 100
+    : null;
+
+  const displayPrice = effectiveBundlePrice ?? product.price;
+  const displayOldPrice = bundleOriginalTotal ?? product.oldPrice;
+  const savePct = displayOldPrice && displayOldPrice > displayPrice
+    ? Math.round((1 - displayPrice / displayOldPrice) * 100)
     : null;
 
   return (
@@ -72,9 +83,9 @@ export default function ProductCard({ product }: { product: Product }) {
         <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{product.shortDesc}</p>
 
         <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-50">
-          <span className="text-lg font-bold text-gray-900">${product.price.toFixed(2)}</span>
-          {product.oldPrice && (
-            <span className="text-sm text-gray-400 line-through">${product.oldPrice.toFixed(2)}</span>
+          <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
+          {displayOldPrice && displayOldPrice > displayPrice && (
+            <span className="text-sm text-gray-400 line-through">${displayOldPrice.toFixed(2)}</span>
           )}
           {savePct && (
             <span className="text-xs font-semibold text-red-500 ml-auto">-{savePct}%</span>

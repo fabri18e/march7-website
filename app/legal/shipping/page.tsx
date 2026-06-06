@@ -5,7 +5,7 @@ export default function ShippingPage() {
     <div className="max-w-2xl mx-auto px-6 py-14">
       <Link href="/" className="text-sm text-accent hover:underline mb-8 inline-block">← Back</Link>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Shipping Policy</h1>
-      <p className="text-gray-500 text-sm mb-10">Last updated: June 2025</p>
+      <p className="text-gray-500 text-sm mb-10">Last updated: June 2026</p>
 
       <div className="space-y-8 text-sm text-gray-700 leading-relaxed">
 
@@ -35,7 +35,7 @@ export default function ShippingPage() {
                   <td className="px-4 py-3">United States</td>
                   <td className="px-4 py-3">7–12 business days</td>
                 </tr>
-                <tr className="border-t border-gray-50 bg-gray-50/50">
+                {/* <tr className="border-t border-gray-50 bg-gray-50/50">
                   <td className="px-4 py-3">Latin America</td>
                   <td className="px-4 py-3">10–15 business days</td>
                 </tr>
@@ -46,7 +46,7 @@ export default function ShippingPage() {
                 <tr className="border-t border-gray-50 bg-gray-50/50">
                   <td className="px-4 py-3">Other countries</td>
                   <td className="px-4 py-3">12–20 business days</td>
-                </tr>
+                </tr> */}
               </tbody>
             </table>
           </div>

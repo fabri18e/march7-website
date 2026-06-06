@@ -87,13 +87,14 @@ export async function sendAdminOrderAlert({
   email: string;
   items: OrderItem[];
   totalAmount: number;
-  shippingAddress?: Record<string, string> | null;
+  shippingAddress?: (Record<string, string | null> & { name?: string | null }) | null;
 }) {
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   if (!adminEmail) return;
 
   const addressLines = shippingAddress
     ? [
+        shippingAddress.name,
         shippingAddress.line1,
         shippingAddress.line2,
         [shippingAddress.city, shippingAddress.state, shippingAddress.postal_code].filter(Boolean).join(', '),
@@ -272,4 +273,56 @@ export async function sendOrderDelivered({
     </div>`);
 
   return sendEmail({ to, subject: 'Your March7 order has been delivered ✅', html });
+}
+
+// ─── 5. Refunded ──────────────────────────────────────────────────────────────
+
+export async function sendOrderRefunded({
+  to, orderId, items, totalAmount,
+}: { to: string; orderId: string; items: OrderItem[]; totalAmount: number }) {
+  const html = emailLayout(`
+    <div style="padding:40px 32px 24px;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">💸</div>
+      <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Your Refund Is On Its Way</h1>
+      <p style="margin:0 0 6px;color:#6B7280;font-size:15px">We've processed a full refund for your order. It usually takes 5–10 business days to appear on your statement depending on your bank.</p>
+      <p style="margin:0 0 28px;font-size:12px;color:#9CA3AF;font-family:monospace">
+        Order #${orderId.replace('paypal_', '').slice(-10).toUpperCase()}
+      </p>
+    </div>
+    <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
+    <div style="margin:0 32px 28px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 18px;text-align:center">
+      <p style="margin:0;font-size:13px;color:#15803D">
+        Amount refunded: <strong>$${(totalAmount / 100).toFixed(2)}</strong>
+      </p>
+    </div>
+    <div style="padding:0 32px 32px;text-align:center">
+      ${ctaButton(`${SITE_URL}/products`, 'Continue Shopping →', '#111827')}
+    </div>`);
+
+  return sendEmail({ to, subject: 'Your March7 refund has been processed 💸', html });
+}
+
+// ─── 6. Cancelled ────────────────────────────────────────────────────────────
+
+export async function sendOrderCancelled({
+  to, orderId, items, totalAmount,
+}: { to: string; orderId: string; items: OrderItem[]; totalAmount: number }) {
+  const html = emailLayout(`
+    <div style="padding:40px 32px 24px;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">❌</div>
+      <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Order Cancelled</h1>
+      <p style="margin:0 0 6px;color:#6B7280;font-size:15px">Your order has been cancelled. If you were charged, a full refund will be processed within 5–10 business days.</p>
+      <p style="margin:0 0 28px;font-size:12px;color:#9CA3AF;font-family:monospace">
+        Order #${orderId.replace('paypal_', '').slice(-10).toUpperCase()}
+      </p>
+    </div>
+    <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
+    <div style="padding:0 32px 32px;text-align:center">
+      ${ctaButton(`${SITE_URL}/legal/contact`, 'Contact Support →', '#6B7280')}
+    </div>
+    <div style="padding:0 32px 32px;text-align:center">
+      ${ctaButton(`${SITE_URL}/products`, 'Browse Products →', '#111827')}
+    </div>`);
+
+  return sendEmail({ to, subject: 'Your March7 order has been cancelled', html });
 }

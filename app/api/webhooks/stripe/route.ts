@@ -33,28 +33,8 @@ export async function POST(req: NextRequest) {
 
     const cart: { id: string; qty: number }[] = JSON.parse(session.metadata?.cart || '[]');
 
-    const supabase = getSupabaseAdmin();
-    const { error } = await supabase.from('orders').insert({
-      stripe_session_id: session.id,
-      user_id: session.metadata?.user_id || null,
-      email: session.customer_details?.email || session.metadata?.email || '',
-      total_amount: session.amount_total || 0,
-      status: 'paid',
-      items: lineItems.data.map((item, i) => ({
-        product_id: cart[i]?.id ?? null,
-        name: item.description,
-        quantity: item.quantity,
-        unit_price: ((item.amount_total ?? 0) / (item.quantity ?? 1)) / 100,
-        total: (item.amount_total ?? 0) / 100,
-      })),
-      shipping_address: (session as { shipping_details?: { address?: unknown } }).shipping_details?.address ?? null,
-    });
-
-    if (error) {
-      console.error('[Webhook] Failed to save order:', error.message);
-      return NextResponse.json({ error: 'DB error' }, { status: 500 });
-    }
-
+    const sd = (session as { shipping_details?: { name?: string; address?: Record<string, string> } }).shipping_details;
+    const shippingAddress = sd ? { name: sd.name ?? null, ...(sd.address ?? {}) } : null;
     const orderItems = lineItems.data.map((item, i) => ({
       product_id: cart[i]?.id ?? null,
       name: item.description ?? '',
@@ -63,12 +43,30 @@ export async function POST(req: NextRequest) {
       total: (item.amount_total ?? 0) / 100,
     }));
 
+    const supabase = getSupabaseAdmin();
+    // Upsert so the webhook always wins: if save-order already inserted without address,
+    // this update sets the address. If this runs first, save-order will ignoreDuplicates.
+    const { error } = await supabase.from('orders').upsert({
+      stripe_session_id: session.id,
+      user_id: session.metadata?.user_id || null,
+      email: session.customer_details?.email || session.metadata?.email || '',
+      total_amount: session.amount_total || 0,
+      status: 'paid',
+      items: orderItems,
+      shipping_address: shippingAddress,
+    }, { onConflict: 'stripe_session_id', ignoreDuplicates: false });
+
+    if (error) {
+      console.error('[Webhook] Failed to save order:', error.message);
+      return NextResponse.json({ error: 'DB error' }, { status: 500 });
+    }
+
     sendAdminOrderAlert({
       orderId: session.id,
       email: session.customer_details?.email || session.metadata?.email || '',
       items: orderItems,
       totalAmount: session.amount_total || 0,
-      shippingAddress: (session as { shipping_details?: { address?: Record<string, string> } }).shipping_details?.address ?? null,
+      shippingAddress: shippingAddress,
     }).catch(err => console.error('[admin-alert]', err));
 
     console.log('[Webhook] Order saved:', session.id);

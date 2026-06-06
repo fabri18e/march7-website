@@ -1,9 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import {
   sendOrderProcessing,
   sendOrderShipped,
   sendOrderDelivered,
+  sendOrderRefunded,
+  sendOrderCancelled,
 } from '@/lib/email';
 
 export async function GET() {
@@ -58,6 +60,10 @@ export async function PATCH(req: Request) {
       }).catch(console.error);
     } else if (fields.status === 'delivered') {
       sendOrderDelivered(emailData).catch(console.error);
+    } else if (fields.status === 'refunded') {
+      sendOrderRefunded(emailData).catch(console.error);
+    } else if (fields.status === 'cancelled') {
+      sendOrderCancelled(emailData).catch(console.error);
     }
   }
 
@@ -74,5 +80,15 @@ export async function PATCH(req: Request) {
     }).catch(console.error);
   }
 
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(req: NextRequest) {
+  const { id } = await req.json();
+  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from('orders').delete().eq('id', id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

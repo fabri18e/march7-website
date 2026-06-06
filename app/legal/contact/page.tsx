@@ -5,7 +5,7 @@ export default function ContactPage() {
     <div className="max-w-2xl mx-auto px-6 py-14">
       <Link href="/" className="text-sm text-accent hover:underline mb-8 inline-block">← Back</Link>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Us</h1>
-      <p className="text-gray-500 text-sm mb-10">Estamos aquí para ayudarte con cualquier pregunta sobre tu pedido.</p>
+      <p className="text-gray-500 text-sm mb-10">We are here to help you with any questions about anything.</p>
 
       <div className="space-y-5">
 
@@ -24,7 +24,7 @@ export default function ContactPage() {
                 support@march7.net
               </a>
               <p className="text-sm text-gray-500 mt-1">
-                Respondemos dentro de las próximas 24–48 horas en días hábiles.
+                We answer within 24 hours even on weekends. For faster support, please include your order number and a detailed description of your issue.
               </p>
             </div>
           </div>
@@ -37,10 +37,9 @@ export default function ContactPage() {
               ⏱️
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-1">Tiempo de respuesta</h3>
+              <h3 className="font-semibold text-gray-900 mb-1">Response time</h3>
               <p className="text-sm text-gray-600">
-                Nuestro equipo de soporte está disponible de <strong>lunes a viernes</strong>.
-                Los mensajes recibidos durante el fin de semana serán respondidos el lunes siguiente.
+                Our support team is available <strong>everyday</strong>.
               </p>
             </div>
           </div>
@@ -48,14 +47,14 @@ export default function ContactPage() {
 
         {/* Before contacting */}
         <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6">
-          <h3 className="font-semibold text-gray-900 mb-3">Antes de contactarnos, revisa:</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">Before contacting us, check:</h3>
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-center gap-2">
               <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeWidth="2" strokeLinecap="round" d="M9 5l7 7-7 7"/>
               </svg>
               <Link href="/legal/faq" className="hover:text-accent hover:underline">
-                Preguntas frecuentes (FAQ)
+                Frequently Asked Questions (FAQ)
               </Link>
             </li>
             <li className="flex items-center gap-2">
@@ -63,7 +62,7 @@ export default function ContactPage() {
                 <path strokeWidth="2" strokeLinecap="round" d="M9 5l7 7-7 7"/>
               </svg>
               <Link href="/legal/shipping" className="hover:text-accent hover:underline">
-                Política de envíos
+                Shipping Policy
               </Link>
             </li>
             <li className="flex items-center gap-2">
@@ -71,7 +70,7 @@ export default function ContactPage() {
                 <path strokeWidth="2" strokeLinecap="round" d="M9 5l7 7-7 7"/>
               </svg>
               <Link href="/legal/returns" className="hover:text-accent hover:underline">
-                Política de devoluciones
+                Returns Policy
               </Link>
             </li>
             <li className="flex items-center gap-2">
@@ -79,7 +78,7 @@ export default function ContactPage() {
                 <path strokeWidth="2" strokeLinecap="round" d="M9 5l7 7-7 7"/>
               </svg>
               <Link href="/account" className="hover:text-accent hover:underline">
-                Tu historial de órdenes
+                Your order history
               </Link>
             </li>
           </ul>
@@ -94,7 +93,7 @@ export default function ContactPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
-            Enviar email
+            Send email
           </a>
         </div>
 

@@ -36,8 +36,8 @@ export default function AIAnalysis({ product }: { product: Product }) {
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-lg">🤖</span>
-            <h4 className="font-semibold text-gray-900">AI Transparency Assistant</h4>
+            <span className="text-lg">✅</span>
+            <h4 className="font-semibold text-gray-900">Expert Review</h4>
           </div>
           <p className="text-sm text-gray-500">Honest pros and cons based on specs and real-world testing.</p>
         </div>
@@ -63,7 +63,7 @@ export default function AIAnalysis({ product }: { product: Product }) {
       {state === 'loading' && (
         <div className="flex items-center gap-3 py-6 justify-center">
           <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-indigo-600">Analyzing product specifications...</span>
+          <span className="text-sm text-indigo-600">Loading review...</span>
         </div>
       )}
 
@@ -108,7 +108,7 @@ export default function AIAnalysis({ product }: { product: Product }) {
           </div>
 
           <p className="text-xs text-gray-400 text-center">
-            AI analysis based on product data · Replace with real AI API when ready
+            Based on product specs and real-world testing
           </p>
         </div>
       )}

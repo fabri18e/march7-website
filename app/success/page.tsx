@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { PageLoader } from '@/components/Spinner';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
@@ -53,8 +54,8 @@ function SuccessContent() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/account" className="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-xl transition-colors">
-            View My Orders
+          <Link href="/track" className="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+            Track My Order
           </Link>
           <Link href="/products" className="border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-colors">
             Continue Shopping
@@ -67,7 +68,7 @@ function SuccessContent() {
 
 export default function SuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center text-gray-400">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><PageLoader /></div>}>
       <SuccessContent />
     </Suspense>
   );

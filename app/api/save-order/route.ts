@@ -28,17 +28,24 @@ export async function POST(req: NextRequest) {
       total: (item.amount_total ?? 0) / 100,
     }));
 
+    const rawAddr = (session as { shipping_details?: { name?: string; address?: Record<string, string> } }).shipping_details;
+    const shippingAddress = rawAddr
+      ? { name: rawAddr.name ?? null, ...(rawAddr.address ?? {}) }
+      : null;
+
     const supabase = getSupabaseAdmin();
-    const { error } = await supabase.from('orders').insert({
+    // Insert only if the webhook hasn't saved it yet (ignoreDuplicates: true).
+    // The webhook will upsert later with the confirmed shipping address.
+    const { error } = await supabase.from('orders').upsert({
       stripe_session_id: session.id,
       user_id: session.metadata?.user_id || null,
       email: session.customer_details?.email || session.metadata?.email || '',
       total_amount: session.amount_total || 0,
       status: 'paid',
       items: orderItems,
-    });
+      shipping_address: shippingAddress,
+    }, { onConflict: 'stripe_session_id', ignoreDuplicates: true });
 
-    // Duplicate = already saved by webhook, that's fine
     if (error && !error.message.includes('duplicate') && !error.code?.includes('23505')) {
       console.error('[save-order]', error);
       return NextResponse.json({ error: error.message }, { status: 500 });

@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import { unstable_noStore as noStore } from 'next/cache';
 import productsData from '@/data/products.json';
-import type { Product } from '@/types';
+import type { Product, ProductVariant } from '@/types';
 
 const jsonProducts = productsData as unknown as Product[];
 
@@ -25,7 +24,13 @@ function mapRow(row: Record<string, unknown>): Product {
     supplierPrice: row.supplier_price ? Number(row.supplier_price) : null,
     images: (row.images as string[] | null) || [],
     freeShipping: Boolean(row.free_shipping),
-    reviews: [],
+    defaultColorLabel: (row.default_color_label as string) || null,
+    defaultColorHex: (row.default_color_hex as string) || null,
+    variants: (row.variants as ProductVariant[] | null) || [],
+    isBundle: Boolean(row.is_bundle),
+    bundleItems: (row.bundle_items as string[] | null) || [],
+    bundleDiscount: row.bundle_discount ? Number(row.bundle_discount) : 0,
+    reviews: (row.reviews as import('@/types').StaticReview[] | null) || [],
   };
 }
 
@@ -39,12 +44,11 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 export async function fetchSupabaseProducts(): Promise<{ data: Product[] | null; error: string | null }> {
-  noStore();
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { global: { fetch: (url, opts) => fetch(url as RequestInfo, { ...(opts as RequestInit), cache: 'no-store' }) } },
+      { global: { fetch: (url, opts) => fetch(url as RequestInfo, { ...(opts as RequestInit), next: { revalidate: 60 } } as RequestInit) } },
     );
 
     const { data, error } = await supabase

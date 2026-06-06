@@ -48,6 +48,13 @@ export async function POST(req: NextRequest) {
       supplier_price: body.supplier_price ? Number(body.supplier_price) : null,
       images: body.images || [],
       free_shipping: body.free_shipping ?? false,
+      default_color_label: body.default_color_label || null,
+      default_color_hex: body.default_color_hex || null,
+      variants: body.variants || [],
+      is_bundle: body.is_bundle ?? false,
+      bundle_items: body.bundle_items || [],
+      bundle_discount: body.bundle_discount ?? 0,
+      reviews: body.reviews || [],
       active: body.active ?? true,
       sort_order: body.sort_order ?? 0,
     })
@@ -80,7 +87,14 @@ export async function PATCH(req: NextRequest) {
   if (fields.supplier_url !== undefined)   update.supplier_url = fields.supplier_url || null;
   if (fields.supplier_price !== undefined) update.supplier_price = fields.supplier_price ? Number(fields.supplier_price) : null;
   if (fields.images !== undefined)         update.images = fields.images;
-  if (fields.free_shipping !== undefined)  update.free_shipping = Boolean(fields.free_shipping);
+  if (fields.free_shipping !== undefined)       update.free_shipping = Boolean(fields.free_shipping);
+  if (fields.default_color_label !== undefined) update.default_color_label = fields.default_color_label || null;
+  if (fields.default_color_hex !== undefined)   update.default_color_hex = fields.default_color_hex || null;
+  if (fields.variants !== undefined)            update.variants = fields.variants;
+  if (fields.is_bundle !== undefined)       update.is_bundle = fields.is_bundle;
+  if (fields.bundle_items !== undefined)     update.bundle_items = fields.bundle_items;
+  if (fields.bundle_discount !== undefined)  update.bundle_discount = fields.bundle_discount;
+  if (fields.reviews !== undefined)        update.reviews = fields.reviews;
   if (fields.active !== undefined)         update.active = fields.active;
   if (fields.sort_order !== undefined)     update.sort_order = fields.sort_order;
 

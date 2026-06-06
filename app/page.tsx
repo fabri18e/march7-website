@@ -98,9 +98,18 @@ function USBHubIcon({ className, style }: IconProps) {
   );
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default async function Home() {
   const products = await getAllProducts();
-  const featured = products.slice(0, 4);
+  const featured = shuffle(products).slice(0, 4);
   const bestSellers = products.filter(p => p.badge === 'Best Seller');
   const newProducts = products.filter(p => p.badge === 'New');
 
@@ -109,20 +118,18 @@ export default async function Home() {
       {/* ── HERO ── */}
       <section
         className="relative text-white overflow-hidden"
-        style={{ background: '#070d1a', minHeight: '420px' }}
+        style={{ background: '#070d1a', minHeight: '360px' }}
       >
         {/* Radial green glow */}
         <div className="absolute inset-0 pointer-events-none" style={{
           background: 'radial-gradient(ellipse 70% 60% at 70% 50%, rgba(34,197,94,0.07) 0%, transparent 70%)',
         }} />
 
-        {/* ── Floating decorative elements ── */}
-
-        {/* Checkmark badges */}
-        <div className="absolute animate-float" style={{ top: '14%', left: '2%', animationDuration: '4s', animationDelay: '0s' }}>
+        {/* Floating decorative elements — hidden on mobile */}
+        <div className="absolute animate-float hidden sm:block" style={{ top: '14%', left: '2%', animationDuration: '4s' }}>
           <CheckBadge size={50} />
         </div>
-        <div className="absolute animate-float-alt" style={{ top: '6%', left: '42%', animationDuration: '5s', animationDelay: '1.3s' }}>
+        <div className="absolute animate-float-alt hidden md:block" style={{ top: '6%', left: '42%', animationDuration: '5s', animationDelay: '1.3s' }}>
           <CheckBadge size={36} />
         </div>
         <div className="absolute animate-float hidden md:block" style={{ bottom: '18%', right: '10%', animationDuration: '4.5s', animationDelay: '2.1s' }}>
@@ -131,98 +138,79 @@ export default async function Home() {
         <div className="absolute animate-float-slow hidden lg:block" style={{ top: '38%', right: '2%', animationDuration: '6s', animationDelay: '0.6s' }}>
           <CheckBadge size={42} />
         </div>
-
-        {/* × mark */}
-        <div className="absolute text-gray-500 font-bold animate-float-alt hidden md:block" style={{ top: '10%', right: '20%', animationDuration: '5s', animationDelay: '1s', fontSize: '22px' }}>
-          ✕
-        </div>
-
-        {/* Large headphones – right */}
+        <div className="absolute text-gray-500 font-bold animate-float-alt hidden md:block" style={{ top: '10%', right: '20%', animationDuration: '5s', animationDelay: '1s', fontSize: '22px' }}>✕</div>
         <div className="absolute animate-float hidden lg:block" style={{ top: '5%', right: '6%', animationDuration: '5s', animationDelay: '0.4s' }}>
           <HeadphonesIcon className="text-white/65" style={{ width: 180, height: 160 } as React.CSSProperties} />
         </div>
-
-        {/* Smaller headphones – top-left */}
         <div className="absolute animate-float-slow hidden xl:block" style={{ top: '4%', left: '16%', animationDuration: '6.5s', animationDelay: '1.8s' }}>
           <HeadphonesIcon className="text-white/35" style={{ width: 68, height: 60 } as React.CSSProperties} />
         </div>
-
-        {/* Keyboard – bottom center */}
         <div className="absolute animate-float-alt hidden lg:block" style={{ bottom: '8%', left: '38%', animationDuration: '7s', animationDelay: '0.9s' }}>
           <KeyboardIcon className="text-white/50" style={{ width: 140, height: 70 } as React.CSSProperties} />
         </div>
-
-        {/* Earbuds – right-center */}
         <div className="absolute animate-float hidden md:block" style={{ top: '52%', right: '18%', animationDuration: '4.8s', animationDelay: '2s' }}>
           <EarbudsIcon className="text-white/55" style={{ width: 84, height: 84 } as React.CSSProperties} />
         </div>
-
-        {/* Mouse – left */}
         <div className="absolute animate-float-slow hidden xl:block" style={{ bottom: '22%', left: '5%', animationDuration: '5.5s', animationDelay: '1.4s' }}>
           <MouseIcon className="text-white/40" style={{ width: 48, height: 72 } as React.CSSProperties} />
         </div>
-
-        {/* Drone – far right */}
         <div className="absolute animate-float-alt hidden xl:block" style={{ bottom: '12%', right: '2%', animationDuration: '6s', animationDelay: '2.7s' }}>
           <DroneIcon className="text-white/40" style={{ width: 100, height: 76 } as React.CSSProperties} />
         </div>
-
-        {/* USB Hub – bottom left */}
         <div className="absolute animate-float hidden lg:block" style={{ bottom: '14%', left: '20%', animationDuration: '5s', animationDelay: '0.2s' }}>
           <USBHubIcon className="text-white/35" style={{ width: 80, height: 44 } as React.CSSProperties} />
         </div>
+        <div className="absolute w-5 h-5 rounded-full bg-green-400/25 animate-float hidden sm:block" style={{ top: '62%', left: '9%', animationDuration: '5.5s', animationDelay: '0.7s' }} />
+        <div className="absolute w-3 h-3 rounded-full bg-white/15 animate-float-alt hidden sm:block" style={{ top: '22%', right: '32%', animationDuration: '4.2s', animationDelay: '2.3s' }} />
+        <div className="absolute w-4 h-4 rounded-full bg-green-500/20 animate-float-slow hidden sm:block" style={{ bottom: '32%', left: '30%', animationDuration: '6.8s', animationDelay: '1.2s' }} />
 
-        {/* Decorative spheres */}
-        <div className="absolute w-5 h-5 rounded-full bg-green-400/25 animate-float" style={{ top: '62%', left: '9%', animationDuration: '5.5s', animationDelay: '0.7s' }} />
-        <div className="absolute w-3 h-3 rounded-full bg-white/15 animate-float-alt" style={{ top: '22%', right: '32%', animationDuration: '4.2s', animationDelay: '2.3s' }} />
-        <div className="absolute w-4 h-4 rounded-full bg-green-500/20 animate-float-slow" style={{ bottom: '32%', left: '30%', animationDuration: '6.8s', animationDelay: '1.2s' }} />
-        <div className="absolute w-2.5 h-2.5 rounded-full bg-white/20 animate-float" style={{ top: '45%', left: '14%', animationDuration: '4.8s', animationDelay: '1.9s' }} />
-
-        {/* ── Main content ── */}
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-14 md:py-20 flex flex-col items-start gap-5" style={{ maxWidth: '560px', marginLeft: 'max(24px, calc((100vw - 1152px) / 2 + 24px))' }}>
-          <div className="animate-hero-in inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full" style={{ animationDelay: '0.05s' }}>
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            Every product personally tested &amp; verified
-          </div>
-          <h1 className="animate-hero-in text-4xl md:text-5xl font-bold leading-tight tracking-tight" style={{ animationDelay: '0.15s' }}>
-            Factory-Direct Tech.<br />
-            <span className="text-gray-400">No Overpriced Brands.</span>
-          </h1>
-          <p className="animate-hero-in text-gray-400 text-base max-w-md leading-relaxed" style={{ animationDelay: '0.27s' }}>
-            We filter out the trash. Only products that pass our strict quality tests make the cut.
-          </p>
-          <div className="animate-hero-in flex items-center gap-3 mt-1" style={{ animationDelay: '0.38s' }}>
-            <Link
-              href="/products"
-              className="bg-white text-gray-900 hover:bg-gray-100 font-semibold px-6 py-2.5 rounded-xl transition-colors"
-            >
-              Browse Products
-            </Link>
-            <Link
-              href="/products"
-              className="text-gray-400 hover:text-white font-medium px-4 py-2.5 transition-colors text-sm"
-            >
-              View all →
-            </Link>
+        {/* Main content */}
+        <div className="relative z-10 px-6 py-12 md:py-20 max-w-6xl mx-auto">
+          <div className="max-w-lg">
+            <div className="animate-hero-in inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full mb-4" style={{ animationDelay: '0.05s' }}>
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              Every product personally tested &amp; verified
+            </div>
+            <h1 className="animate-hero-in text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-4" style={{ animationDelay: '0.15s' }}>
+              Factory-Direct Tech.<br />
+              <span className="text-gray-400">No Overpriced Brands.</span>
+            </h1>
+            <p className="animate-hero-in text-gray-400 text-sm sm:text-base max-w-md leading-relaxed mb-6" style={{ animationDelay: '0.27s' }}>
+              We filter out the trash. Only products that pass our strict quality tests make the cut.
+            </p>
+            <div className="animate-hero-in flex flex-wrap items-center gap-3" style={{ animationDelay: '0.38s' }}>
+              <Link
+                href="/products"
+                className="bg-white text-gray-900 hover:bg-gray-100 font-semibold px-6 py-3 rounded-xl transition-colors text-sm sm:text-base"
+              >
+                Browse Products
+              </Link>
+              <Link
+                href="/products"
+                className="text-gray-400 hover:text-white font-medium px-2 py-3 transition-colors text-sm"
+              >
+                View all →
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── Trust Bar ── */}
       <section className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-gray-100">
             {[
               { icon: '🛡️', title: 'Quality Tested', desc: 'Every product verified' },
               { icon: '🚚', title: 'Fast Shipping', desc: 'Delivers in 7–15 days' },
-              { icon: '↩', title: '30-Day Returns', desc: 'No questions asked' },
+              { icon: '↩', title: '30-Day Returns', desc: 'According to our policy' },
               { icon: '🔒', title: 'Secure Payment', desc: 'SSL encrypted' },
             ].map(item => (
-              <div key={item.title} className="flex items-center gap-3 px-6 py-5">
-                <span className="text-2xl">{item.icon}</span>
+              <div key={item.title} className="flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-4 sm:py-5">
+                <span className="text-xl sm:text-2xl">{item.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{item.title}</p>
-                  <p className="text-xs text-gray-500">{item.desc}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900">{item.title}</p>
+                  <p className="text-xs text-gray-500 hidden sm:block">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -232,18 +220,18 @@ export default async function Home() {
 
       {/* ── Featured Products ── */}
       {featured.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-16">
-          <div className="flex items-end justify-between mb-8">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+          <div className="flex items-end justify-between mb-6 sm:mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Featured Products</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Featured Products</h2>
               <p className="text-gray-500 mt-1 text-sm">Hand-picked for quality and value</p>
             </div>
-            <Link href="/products" className="text-sm text-accent hover:text-accent-hover font-medium">
+            <Link href="/products" className="text-sm text-accent hover:text-accent-hover font-medium whitespace-nowrap ml-4">
               View all →
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {featured.map(p => <ProductCard key={p.id} product={p} />)}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+            {featured.map(p => <ProductCard key={p.id} product={p} allProducts={products} />)}
           </div>
         </section>
       )}
@@ -251,15 +239,15 @@ export default async function Home() {
       {/* ── Best Sellers ── */}
       {bestSellers.length > 0 && (
         <section className="bg-gray-50">
-          <div className="max-w-6xl mx-auto px-6 py-16">
-            <div className="flex items-end justify-between mb-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+            <div className="flex items-end justify-between mb-6 sm:mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Best Sellers</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Best Sellers</h2>
                 <p className="text-gray-500 mt-1 text-sm">Most popular with our customers</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {bestSellers.map(p => <ProductCard key={p.id} product={p} />)}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+              {bestSellers.map(p => <ProductCard key={p.id} product={p} allProducts={products} />)}
             </div>
           </div>
         </section>
@@ -267,34 +255,34 @@ export default async function Home() {
 
       {/* ── New Arrivals ── */}
       {newProducts.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-16">
-          <div className="flex items-end justify-between mb-8">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+          <div className="flex items-end justify-between mb-6 sm:mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">New Arrivals</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">New Arrivals</h2>
               <p className="text-gray-500 mt-1 text-sm">Just added to the catalog</p>
             </div>
-            <Link href="/products?badge=New" className="text-sm text-accent hover:text-accent-hover font-medium">
+            <Link href="/products?badge=New" className="text-sm text-accent hover:text-accent-hover font-medium whitespace-nowrap ml-4">
               See all new →
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {newProducts.map(p => <ProductCard key={p.id} product={p} />)}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+            {newProducts.map(p => <ProductCard key={p.id} product={p} allProducts={products} />)}
           </div>
         </section>
       )}
 
       {/* ── CTA ── */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="bg-gray-950 rounded-3xl p-10 md:p-16 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        <div className="bg-gray-950 rounded-2xl sm:rounded-3xl p-8 sm:p-12 md:p-16 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
             Ready to upgrade your setup?
           </h2>
-          <p className="text-gray-400 mb-8 max-w-md mx-auto">
+          <p className="text-gray-400 mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base">
             Browse our full catalog. Use the AI analyzer on any product to get honest pros and cons.
           </p>
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 bg-white text-gray-900 hover:bg-gray-100 font-semibold px-8 py-3.5 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 bg-white text-gray-900 hover:bg-gray-100 font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl transition-colors text-sm sm:text-base"
           >
             Shop All Products →
           </Link>
