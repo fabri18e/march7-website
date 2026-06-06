@@ -44,5 +44,45 @@ export default async function ProductPage({ params }: { params: { id: string } }
   const products = await getAllProducts();
   const product = products.find(p => p.id === params.id);
   if (!product) notFound();
-  return <ProductDetail product={product} allProducts={products} />;
+
+  const siteUrl = process.env.NEXT_PUBLIC_URL || 'https://www.march7.net';
+  const image = product.images?.[0] || product.image || null;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.shortDesc || product.description || '',
+    sku: product.id,
+    brand: { '@type': 'Brand', name: 'March7' },
+    ...(image ? { image: [image] } : {}),
+    offers: {
+      '@type': 'Offer',
+      url: `${siteUrl}/products/${product.id}`,
+      priceCurrency: 'USD',
+      price: product.price.toFixed(2),
+      availability: 'https://schema.org/InStock',
+      seller: { '@type': 'Organization', name: 'March7' },
+      shippingDetails: product.freeShipping ? {
+        '@type': 'OfferShippingDetails',
+        shippingRate: { '@type': 'MonetaryAmount', value: '0', currency: 'USD' },
+      } : undefined,
+    },
+    ...(product.reviews?.length ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: (product.reviews.reduce((s, r) => s + r.rating, 0) / product.reviews.length).toFixed(1),
+        reviewCount: product.reviews.length,
+      },
+    } : {}),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductDetail product={product} allProducts={products} />
+    </>
+  );
 }
