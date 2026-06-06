@@ -40,7 +40,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Contact</h2>
-          <p>Questions? Email <a href="mailto:support@march7.com" className="text-accent hover:underline">support@march7.com</a>.</p>
+          <p>Questions? Email <a href="mailto:store@march7.net" className="text-accent hover:underline">store@march7.net</a>.</p>
         </section>
       </div>
     </div>

@@ -35,12 +35,12 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Your Rights</h2>
-          <p>You can request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:support@march7.com" className="text-accent hover:underline">support@march7.com</a>.</p>
+          <p>You can request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:store@march7.net" className="text-accent hover:underline">store@march7.net</a>.</p>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Contact</h2>
-          <p>Questions about this policy? Contact us at <a href="mailto:support@march7.com" className="text-accent hover:underline">support@march7.com</a>.</p>
+          <p>Questions about this policy? Contact us at <a href="mailto:store@march7.net" className="text-accent hover:underline">store@march7.net</a>.</p>
         </section>
       </div>
     </div>

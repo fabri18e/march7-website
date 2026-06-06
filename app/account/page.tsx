@@ -177,7 +177,7 @@ export default function AccountPage() {
             Need help?{' '}
             <Link href="/legal/returns" className="text-accent hover:underline">Return policy</Link>
             {' '}·{' '}
-            <a href="mailto:support@march7.com" className="text-accent hover:underline">Contact support</a>
+            <a href="mailto:store@march7.net" className="text-accent hover:underline">Contact support</a>
           </p>
         </div>
       )}

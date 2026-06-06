@@ -133,7 +133,7 @@ export default function OrdersPage() {
         Need help with an order?{' '}
         <Link href="/legal/returns" className="text-accent hover:underline">View return policy</Link>
         {' '}or{' '}
-        <a href="mailto:support@march7.com" className="text-accent hover:underline">contact support</a>.
+        <a href="mailto:store@march7.net" className="text-accent hover:underline">contact support</a>.
       </div>
     </div>
   );

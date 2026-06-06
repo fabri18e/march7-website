@@ -1,7 +1,7 @@
 const BREVO_API_KEY = process.env.BREVO_API_KEY!;
 const FROM_EMAIL = process.env.EMAIL_FROM_ADDRESS || 'store@march7.net';
 const FROM_NAME = process.env.EMAIL_FROM_NAME || 'March7';
-const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://march7.com';
+const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://www.march7.net';
 
 export interface OrderItem {
   name: string;
@@ -147,6 +147,51 @@ export async function sendAdminOrderAlert({
     </div>`);
 
   return sendEmail({ to: adminEmail, subject: `🛍️ New order $${(totalAmount / 100).toFixed(2)} from ${email}`, html });
+}
+
+// ─── 0b. Admin: Chargeback Alert ─────────────────────────────────────────────
+
+export async function sendAdminDisputeAlert({
+  orderId, email, amount, reason, dueBy,
+}: {
+  orderId: string; email: string; amount: number; reason: string; dueBy?: number | null;
+}) {
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  if (!adminEmail) return;
+
+  const dueByDate = dueBy
+    ? new Date(dueBy * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Check Stripe Dashboard';
+
+  const html = emailLayout(`
+    <div style="padding:32px 32px 28px">
+      <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px 18px;margin-bottom:24px;text-align:center">
+        <p style="margin:0;font-size:16px;font-weight:700;color:#DC2626">⚠️ Chargeback Filed — Action Required</p>
+        <p style="margin:4px 0 0;font-size:13px;color:#EF4444">You must respond in Stripe before the deadline or you lose automatically</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <p style="margin:0 0 4px;font-size:11px;color:#9CA3AF;text-transform:uppercase">Customer</p>
+        <p style="margin:0;font-size:14px;font-weight:600;color:#111827">${email}</p>
+        <p style="margin:4px 0 0;font-size:12px;color:#9CA3AF;font-family:monospace">Order #${orderId.replace('paypal_', '').slice(-10).toUpperCase()}</p>
+      </div>
+
+      <div style="margin-bottom:24px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:14px 18px">
+        <p style="margin:0 0 8px;font-size:13px;color:#374151"><strong>Amount disputed:</strong> $${(amount / 100).toFixed(2)}</p>
+        <p style="margin:0 0 8px;font-size:13px;color:#374151"><strong>Reason:</strong> ${reason.replace(/_/g, ' ')}</p>
+        <p style="margin:0;font-size:13px;color:#DC2626"><strong>Respond by:</strong> ${dueByDate}</p>
+      </div>
+
+      <div style="text-align:center">
+        ${ctaButton('https://dashboard.stripe.com/disputes', '→ Open Stripe Disputes', '#DC2626')}
+      </div>
+    </div>`);
+
+  return sendEmail({
+    to: adminEmail,
+    subject: `⚠️ Chargeback $${(amount / 100).toFixed(2)} from ${email} — respond by ${dueByDate}`,
+    html,
+  });
 }
 
 // ─── 1. Order Confirmed ───────────────────────────────────────────────────────

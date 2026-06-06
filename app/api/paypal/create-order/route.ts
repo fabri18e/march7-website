@@ -4,7 +4,7 @@ import { createPayPalOrder } from '@/lib/paypal';
 export async function POST(req: NextRequest) {
   try {
     const { items, userId, userEmail } = await req.json();
-    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_URL || 'https://www.march7.net';
 
     const { id, approveUrl } = await createPayPalOrder(
       items,

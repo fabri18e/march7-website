@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { sendAdminOrderAlert } from '@/lib/email';
+import { sendAdminOrderAlert, sendAdminDisputeAlert, sendOrderRefunded } from '@/lib/email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-05-27.dahlia',
 });
 
-// Stripe requires raw body for signature verification — disable body parsing
 export const dynamic = 'force-dynamic';
+
+async function findOrderByPaymentIntent(paymentIntentId: string) {
+  const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntentId, limit: 1 });
+  const sessionId = sessions.data[0]?.id;
+  if (!sessionId) return null;
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase.from('orders').select('*').eq('stripe_session_id', sessionId).single();
+  return data;
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -25,12 +33,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
   }
 
+  // ── New order ──────────────────────────────────────────────────────────────
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
 
-    // Fetch actual line items from Stripe
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
-
     const cart: { id: string; qty: number }[] = JSON.parse(session.metadata?.cart || '[]');
 
     const sd = (session as { shipping_details?: { name?: string; address?: Record<string, string> } }).shipping_details;
@@ -44,8 +51,6 @@ export async function POST(req: NextRequest) {
     }));
 
     const supabase = getSupabaseAdmin();
-    // Upsert so the webhook always wins: if save-order already inserted without address,
-    // this update sets the address. If this runs first, save-order will ignoreDuplicates.
     const { error } = await supabase.from('orders').upsert({
       stripe_session_id: session.id,
       user_id: session.metadata?.user_id || null,
@@ -70,6 +75,76 @@ export async function POST(req: NextRequest) {
     }).catch(err => console.error('[admin-alert]', err));
 
     console.log('[Webhook] Order saved:', session.id);
+  }
+
+  // ── Chargeback filed ───────────────────────────────────────────────────────
+  if (event.type === 'charge.dispute.created') {
+    const dispute = event.data.object as Stripe.Dispute;
+    const paymentIntentId = typeof dispute.payment_intent === 'string'
+      ? dispute.payment_intent
+      : dispute.payment_intent?.id;
+
+    if (paymentIntentId) {
+      const order = await findOrderByPaymentIntent(paymentIntentId);
+      if (order) {
+        const supabase = getSupabaseAdmin();
+        await supabase.from('orders').update({ status: 'disputed' }).eq('id', order.id);
+
+        sendAdminDisputeAlert({
+          orderId: order.stripe_session_id,
+          email: order.email,
+          amount: dispute.amount,
+          reason: dispute.reason,
+          dueBy: (dispute as unknown as { evidence_due_by?: number }).evidence_due_by,
+        }).catch(err => console.error('[dispute-alert]', err));
+
+        console.log('[Webhook] Dispute created for order:', order.id);
+      }
+    }
+  }
+
+  // ── Chargeback resolved ────────────────────────────────────────────────────
+  if (event.type === 'charge.dispute.closed') {
+    const dispute = event.data.object as Stripe.Dispute;
+    const paymentIntentId = typeof dispute.payment_intent === 'string'
+      ? dispute.payment_intent
+      : dispute.payment_intent?.id;
+
+    if (paymentIntentId) {
+      const order = await findOrderByPaymentIntent(paymentIntentId);
+      if (order) {
+        const supabase = getSupabaseAdmin();
+        // Won: restore previous status. Lost: mark refunded (Stripe already returned the money).
+        const newStatus = dispute.status === 'won' ? 'delivered' : 'refunded';
+        await supabase.from('orders').update({ status: newStatus }).eq('id', order.id);
+        console.log('[Webhook] Dispute closed (%s) for order:', dispute.status, order.id);
+      }
+    }
+  }
+
+  // ── Refund processed ──────────────────────────────────────────────────────
+  if (event.type === 'charge.refunded') {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId = typeof charge.payment_intent === 'string'
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+
+    if (paymentIntentId) {
+      const order = await findOrderByPaymentIntent(paymentIntentId);
+      if (order) {
+        const supabase = getSupabaseAdmin();
+        await supabase.from('orders').update({ status: 'refunded' }).eq('id', order.id);
+
+        sendOrderRefunded({
+          to: order.email,
+          orderId: order.stripe_session_id,
+          items: order.items,
+          totalAmount: order.total_amount,
+        }).catch(err => console.error('[refund-email]', err));
+
+        console.log('[Webhook] Refund processed for order:', order.id);
+      }
+    }
   }
 
   return NextResponse.json({ received: true });
