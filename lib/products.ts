@@ -4,7 +4,7 @@ import type { Product, ProductVariant } from '@/types';
 
 const jsonProducts = productsData as unknown as Product[];
 
-function mapRow(row: Record<string, unknown>): Product {
+export function mapProductRow(row: Record<string, unknown>): Product {
   return {
     id: row.id as string,
     name: row.name as string,
@@ -59,7 +59,7 @@ export async function fetchSupabaseProducts(): Promise<{ data: Product[] | null;
       .order('created_at', { ascending: false });
 
     if (error) return { data: null, error: error.message };
-    return { data: (data || []).map(mapRow), error: null };
+    return { data: (data || []).map(mapProductRow), error: null };
   } catch (e) {
     return { data: null, error: String(e) };
   }

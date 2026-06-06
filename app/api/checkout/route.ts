@@ -1,12 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getAllProducts } from '@/lib/products';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { mapProductRow } from '@/lib/products';
+import type { Product } from '@/types';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-05-27.dahlia',
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://www.march7.net';
+
+async function fetchProductsForCheckout(): Promise<Map<string, Product>> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('active', true);
+
+  if (error || !data?.length) throw new Error('Could not load products. Please try again.');
+  const map = new Map<string, Product>();
+  for (const row of data) {
+    const p = mapProductRow(row);
+    map.set(p.id, p);
+  }
+  return map;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,9 +38,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
-    // Look up authoritative prices server-side — never trust client-supplied prices
-    const allProducts = await getAllProducts();
-    const productMap = new Map(allProducts.map(p => [p.id, p]));
+    // Look up authoritative prices server-side via admin client — bypasses cache
+    const productMap = await fetchProductsForCheckout();
 
     const lineItems = items.map(item => {
       const baseId = item.id.split('--')[0];
@@ -51,7 +68,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Fallback to client image if no server image found (display only, not security-critical)
       const displayImage = image || item.image || null;
 
       return {
@@ -71,7 +87,6 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       mode: 'payment',
       line_items: lineItems,
-      // Hardcoded redirect URLs — never built from client-supplied Origin header
       success_url: `${SITE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_URL}/`,
       metadata: {
