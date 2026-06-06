@@ -28,10 +28,8 @@ export async function POST(req: NextRequest) {
       total: (item.amount_total ?? 0) / 100,
     }));
 
-    const rawAddr = (session as { shipping_details?: { name?: string; address?: Record<string, string> } }).shipping_details;
-    const shippingAddress = rawAddr
-      ? { name: rawAddr.name ?? null, ...(rawAddr.address ?? {}) }
-      : null;
+    const rawAddr = session.collected_information?.shipping_details;
+    const shippingAddress = rawAddr ? { name: rawAddr.name ?? null, ...rawAddr.address } : null;
 
     const supabase = getSupabaseAdmin();
     // Insert only if the webhook hasn't saved it yet (ignoreDuplicates: true).
@@ -67,7 +65,7 @@ export async function POST(req: NextRequest) {
         email: customerEmail || '',
         items: orderItems,
         totalAmount: session.amount_total || 0,
-        shippingAddress: (session as { shipping_details?: { address?: Record<string, string> } }).shipping_details?.address ?? null,
+        shippingAddress: session.collected_information?.shipping_details?.address as unknown as Record<string, string | null> ?? null,
       }).catch(err => console.error('[email:admin-alert]', err));
     }
 

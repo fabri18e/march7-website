@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
     const cart: { id: string; qty: number }[] = JSON.parse(session.metadata?.cart || '[]');
 
-    const sd = (session as { shipping_details?: { name?: string; address?: Record<string, string> } }).shipping_details;
-    const shippingAddress = sd ? { name: sd.name ?? null, ...(sd.address ?? {}) } : null;
+    const sd = session.collected_information?.shipping_details;
+    const shippingAddress = sd ? { name: sd.name ?? null, ...sd.address } : null;
     const orderItems = lineItems.data.map((item, i) => ({
       product_id: cart[i]?.id ?? null,
       name: item.description ?? '',
