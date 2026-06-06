@@ -18,9 +18,11 @@ function SuccessContent() {
     // Clear cart directly from localStorage — works regardless of when items load
     clearCart();
 
-    // Save order to Supabase (fallback when webhook not configured)
-    if (sessionId && !saved.current) {
+    // Save order to Supabase — only once per session_id, even across page reloads
+    const storageKey = `m7_saved_${sessionId}`;
+    if (sessionId && !saved.current && !sessionStorage.getItem(storageKey)) {
       saved.current = true;
+      sessionStorage.setItem(storageKey, '1');
       fetch('/api/save-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

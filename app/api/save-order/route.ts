@@ -32,9 +32,17 @@ export async function POST(req: NextRequest) {
     const shippingAddress = rawAddr ? { name: rawAddr.name ?? null, ...rawAddr.address } : null;
 
     const supabase = getSupabaseAdmin();
-    // Insert only if the webhook hasn't saved it yet (ignoreDuplicates: true).
-    // The webhook will upsert later with the confirmed shipping address.
-    const { error } = await supabase.from('orders').upsert({
+
+    // Check if order already exists — if so, skip email to avoid duplicates
+    const { data: existing } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('stripe_session_id', session.id)
+      .maybeSingle();
+
+    if (existing) return NextResponse.json({ ok: true });
+
+    const { error } = await supabase.from('orders').insert({
       stripe_session_id: session.id,
       user_id: session.metadata?.user_id || null,
       email: session.customer_details?.email || session.metadata?.email || '',
@@ -42,16 +50,16 @@ export async function POST(req: NextRequest) {
       status: 'paid',
       items: orderItems,
       shipping_address: shippingAddress,
-    }, { onConflict: 'stripe_session_id', ignoreDuplicates: true });
+    });
 
-    if (error && !error.message.includes('duplicate') && !error.code?.includes('23505')) {
+    if (error) {
       console.error('[save-order]', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Fire and forget: confirmation to customer + alert to admin
+    // Send emails only on first insert
     const customerEmail = session.customer_details?.email || session.metadata?.email;
-    if (!error) {
+    if (true) {
       if (customerEmail) {
         sendOrderConfirmation({
           to: customerEmail,
