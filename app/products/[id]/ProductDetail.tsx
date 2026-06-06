@@ -9,6 +9,32 @@ import ReviewSection from '@/components/ReviewSection';
 import AIAnalysis from '@/components/AIAnalysis';
 import StarRating from '@/components/StarRating';
 
+function useCountdown(productId: string) {
+  const [t, setT] = useState({ h: 23, m: 59, s: 59 });
+  useEffect(() => {
+    const key = `m7_cd_${productId}`;
+    let deadline = parseInt(localStorage.getItem(key) || '0');
+    if (!deadline || deadline < Date.now()) {
+      deadline = Date.now() + 24 * 60 * 60 * 1000;
+      localStorage.setItem(key, String(deadline));
+    }
+    const tick = () => {
+      const diff = Math.max(0, deadline - Date.now());
+      setT({ h: Math.floor(diff / 3600000), m: Math.floor((diff % 3600000) / 60000), s: Math.floor((diff % 60000) / 1000) });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [productId]);
+  return t;
+}
+
+function useViewers(productId: string) {
+  const base = productId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const [count] = useState(() => 8 + (base % 17));
+  return count;
+}
+
 function avgRating(reviews: Product['reviews']) {
   if (!reviews.length) return 0;
   return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
@@ -18,6 +44,8 @@ type Tab = 'description' | 'specs' | 'ai';
 
 function ProductDetailInner({ product, allProducts }: { product: Product; allProducts: Product[] }) {
   const { addItem, openCart } = useCart();
+  const countdown = useCountdown(product.id);
+  const viewers = useViewers(product.id);
   const [activeTab, setActiveTab] = useState<Tab>('description');
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
@@ -214,6 +242,11 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
             </div>
           )}
 
+          <p className="text-xs text-gray-500 flex items-center gap-1.5 -mt-1">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+            {viewers} people viewing this right now
+          </p>
+
           <div className="flex items-end gap-3">
             <span className="text-4xl font-bold text-gray-900">${effectivePrice.toFixed(2)}</span>
             {effectiveOldPrice && effectiveOldPrice > effectivePrice && (
@@ -404,6 +437,16 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
               )}
             </div>
           )}
+
+          <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3">
+            <span className="text-xl flex-shrink-0">🔥</span>
+            <div>
+              <p className="text-xs font-bold text-orange-700">Limited time offer — ends in</p>
+              <p className="font-mono text-base font-bold text-orange-600 leading-none mt-0.5">
+                {String(countdown.h).padStart(2, '0')}:{String(countdown.m).padStart(2, '0')}:{String(countdown.s).padStart(2, '0')}
+              </p>
+            </div>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
             <button

@@ -4,12 +4,30 @@ import { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
+interface Suggestion { id: string; name: string; price: number; image: string | null; }
+
 export default function CartDrawer() {
-  const { items, isOpen, closeCart, removeItem, updateQty, total, count } = useCart();
+  const { items, isOpen, closeCart, removeItem, updateQty, total, count, addItem } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [error, setError] = useState('');
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
+  useEffect(() => {
+    if (!isOpen || items.length === 0) return;
+    fetch('/api/products')
+      .then(r => r.json())
+      .then(({ products }) => {
+        const cartIds = new Set(items.map(i => i.id.split('--')[0]));
+        const filtered = (products as Suggestion[]).filter(p => !cartIds.has(p.id));
+        // Shuffle deterministically based on cart content
+        const seed = items.reduce((a, i) => a + i.id.charCodeAt(0), 0);
+        const shuffled = [...filtered].sort((a, b) => (a.id.charCodeAt(0) + seed) % 7 - (b.id.charCodeAt(0) + seed) % 7);
+        setSuggestions(shuffled.slice(0, 2));
+      })
+      .catch(() => {});
+  }, [isOpen, items]);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
@@ -117,6 +135,35 @@ export default function CartDrawer() {
                   </div>
                 </div>
               ))}
+
+              {suggestions.length > 0 && (
+                <div className="pt-4 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">You might also like</p>
+                  <div className="space-y-3">
+                    {suggestions.map(s => (
+                      <div key={s.id} className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex-shrink-0 overflow-hidden">
+                          {s.image
+                            // eslint-disable-next-line @next/next/no-img-element
+                            ? <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
+                            : <span className="flex items-center justify-center w-full h-full text-gray-300 text-xl">📦</span>
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-900 truncate">{s.name}</p>
+                          <p className="text-xs text-gray-500">${s.price.toFixed(2)}</p>
+                        </div>
+                        <button
+                          onClick={() => addItem({ id: s.id, name: s.name, price: s.price, image: s.image })}
+                          className="text-xs font-semibold text-accent border border-accent px-2.5 py-1 rounded-lg hover:bg-accent-light transition-colors flex-shrink-0"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
