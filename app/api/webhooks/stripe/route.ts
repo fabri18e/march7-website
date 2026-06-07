@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendAdminOrderAlert, sendAdminDisputeAlert, sendOrderRefunded, sendOrderConfirmation } from '@/lib/email';
+import { tiktokServerPurchase } from '@/lib/tiktok-server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-05-27.dahlia',
@@ -84,6 +85,14 @@ export async function POST(req: NextRequest) {
         totalAmount: session.amount_total || 0,
       }).catch(err => console.error('[confirmation-email]', err));
     }
+
+    tiktokServerPurchase({
+      email: customerEmail,
+      value: (session.amount_total || 0) / 100,
+      currency: 'USD',
+      orderId: session.id,
+      items: orderItems.map(i => ({ id: i.product_id || '', name: i.name, price: i.unit_price, quantity: i.quantity })),
+    }).catch(err => console.error('[tiktok-purchase]', err));
 
     console.log('[Webhook] Order saved:', session.id);
   }
