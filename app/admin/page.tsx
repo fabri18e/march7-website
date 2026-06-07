@@ -1101,6 +1101,8 @@ function ProductsTab() {
   const [showBundleForm, setShowBundleForm] = useState(false);
   const [editing, setEditing] = useState<DBProduct | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string>('');
 
   useEffect(() => {
     fetch('/api/admin/products')
@@ -1179,6 +1181,29 @@ function ProductsTab() {
         <p className="text-sm text-gray-500">{products.length} products in Supabase</p>
         <div className="flex gap-2 flex-wrap">
           <button
+            onClick={async () => {
+              setSyncing(true);
+              setSyncResult('');
+              try {
+                const res = await fetch('/api/admin/sync-merchant', {
+                  method: 'POST',
+                  headers: { 'x-admin-secret': process.env.NEXT_PUBLIC_ADMIN_SECRET || '' },
+                });
+                const data = await res.json();
+                if (data.error) setSyncResult(`Error: ${data.error}`);
+                else setSyncResult(`✓ Synced ${data.synced} products to Google Merchant${data.failed ? ` (${data.failed} failed)` : ''}`);
+              } catch (e) {
+                setSyncResult(`Error: ${e}`);
+              } finally {
+                setSyncing(false);
+              }
+            }}
+            disabled={syncing}
+            className="border border-gray-300 text-gray-600 hover:bg-gray-50 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl transition-colors whitespace-nowrap disabled:opacity-50"
+          >
+            {syncing ? 'Syncing...' : '🛍 Sync Merchant'}
+          </button>
+          <button
             onClick={() => setShowBundleForm(true)}
             className="border border-accent text-accent hover:bg-accent-light text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
           >
@@ -1192,6 +1217,11 @@ function ProductsTab() {
           </button>
         </div>
       </div>
+      {syncResult && (
+        <p className={`text-xs px-3 py-2 rounded-lg ${syncResult.startsWith('Error') ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
+          {syncResult}
+        </p>
+      )}
 
       {products.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl">
