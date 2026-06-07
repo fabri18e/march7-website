@@ -77,7 +77,7 @@ function buildProductInput(p: Product, variantColor?: string, variantPrice?: num
 
 async function upsertToMerchant(token: string, input: Record<string, unknown>) {
   const dataSource = `accounts/${MERCHANT_ID}/dataSources/${DATA_SOURCE_ID}`;
-  const url = `https://merchantapi.googleapis.com/products/v1beta/accounts/${MERCHANT_ID}/productInputs:insert?dataSource=${encodeURIComponent(dataSource)}`;
+  const url = `https://merchantapi.googleapis.com/products/v1/accounts/${MERCHANT_ID}/productInputs:insert?dataSource=${encodeURIComponent(dataSource)}`;
 
   const res = await fetch(url, {
     method: 'POST',
