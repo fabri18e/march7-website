@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { getSupabase } from '@/lib/supabase';
+import { tiktokIdentify } from '@/lib/tiktok';
 
 interface AuthContextType {
   user: User | null;
@@ -26,8 +27,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const u = session?.user ?? null;
+      setUser(u);
       setLoading(false);
+      if (u) tiktokIdentify(u.email, u.id);
     });
 
     return () => subscription.unsubscribe();

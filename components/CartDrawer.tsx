@@ -45,7 +45,7 @@ export default function CartDrawer() {
   }, []);
 
   const handleCheckout = async () => {
-    tiktokInitiateCheckout(total);
+    tiktokInitiateCheckout(total, items.map(i => ({ id: i.id, name: i.name })));
     setLoading(true);
     setError('');
     try {
