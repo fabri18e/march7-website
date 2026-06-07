@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth } from 'google-auth-library';
+
+export const runtime = 'nodejs';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { mapProductRow } from '@/lib/products';
 import type { Product } from '@/types';
