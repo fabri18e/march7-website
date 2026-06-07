@@ -30,14 +30,15 @@ function productToItems(p: Product): string {
 
   // Products with variants generate one entry per color
   if (p.variants && p.variants.length > 0) {
-    return p.variants.map(v => {
+    const variantColors = p.variants.map(v => v.color.toLowerCase());
+    const cleanId = p.id.replace(/-+$/, '');
+
+    const variantItems = p.variants.map(v => {
       const variantSlug = v.color.toLowerCase().replace(/\s+/g, '-');
       const image = v.images?.[0] || p.image || p.images?.[0] || '';
       const price = (v.price ?? p.price).toFixed(2);
-      const oldPrice = (v.oldPrice ?? p.oldPrice ?? null);
-      const variantId = `${p.id.replace(/-+$/, '')}--${variantSlug}`;
-
       const regularPrice = (v.oldPrice ?? p.oldPrice ?? null);
+      const variantId = `${cleanId}--${variantSlug}`;
 
       return `
   <item>
@@ -52,11 +53,40 @@ function productToItems(p: Product): string {
     <g:brand>${BRAND}</g:brand>
     <g:condition>new</g:condition>
     <g:google_product_category>${escapeXml(category)}</g:google_product_category>
-    <g:item_group_id>${escapeXml(p.id.replace(/-+$/, ''))}</g:item_group_id>
+    <g:item_group_id>${escapeXml(cleanId)}</g:item_group_id>
     <g:color>${escapeXml(v.color)}</g:color>
     ${p.freeShipping ? `<g:shipping><g:country>US</g:country><g:service>Standard</g:service><g:price>0 USD</g:price></g:shipping>` : ''}
   </item>`;
-    }).join('');
+    });
+
+    // Default color — only if not already covered by a configured variant
+    if (p.defaultColorLabel && !variantColors.includes(p.defaultColorLabel.toLowerCase())) {
+      const defaultSlug = p.defaultColorLabel.toLowerCase().replace(/\s+/g, '-');
+      const defaultImage = p.image || p.images?.[0] || p.variants[0]?.images?.[0] || '';
+      const defaultPrice = p.price.toFixed(2);
+      const regularPrice = p.oldPrice ?? null;
+      const defaultId = `${cleanId}--${defaultSlug}`;
+
+      variantItems.unshift(`
+  <item>
+    <g:id>${escapeXml(defaultId)}</g:id>
+    <g:title>${escapeXml(`${p.name} — ${p.defaultColorLabel}`)}</g:title>
+    <g:description>${description}</g:description>
+    <g:link>${baseUrl}</g:link>
+    ${defaultImage ? `<g:image_link>${escapeXml(defaultImage)}</g:image_link>` : ''}
+    <g:availability>in stock</g:availability>
+    <g:price>${regularPrice ? regularPrice.toFixed(2) : defaultPrice} USD</g:price>
+    ${regularPrice ? `<g:sale_price>${defaultPrice} USD</g:sale_price>` : ''}
+    <g:brand>${BRAND}</g:brand>
+    <g:condition>new</g:condition>
+    <g:google_product_category>${escapeXml(category)}</g:google_product_category>
+    <g:item_group_id>${escapeXml(cleanId)}</g:item_group_id>
+    <g:color>${escapeXml(p.defaultColorLabel)}</g:color>
+    ${p.freeShipping ? `<g:shipping><g:country>US</g:country><g:service>Standard</g:service><g:price>0 USD</g:price></g:shipping>` : ''}
+  </item>`);
+    }
+
+    return variantItems.join('');
   }
 
   // Single product (no variants)
