@@ -24,11 +24,18 @@ async function getAuthToken(): Promise<string> {
   return tokenRes.token;
 }
 
+function safeOfferId(base: string, colorSuffix?: string): string {
+  if (colorSuffix) {
+    const suffix = `--${colorSuffix}`;
+    return `${base.slice(0, 50 - suffix.length)}${suffix}`.slice(0, 50);
+  }
+  return base.slice(0, 50);
+}
+
 function buildProduct(p: Product, variantColor?: string, variantPrice?: number, variantImage?: string) {
   const cleanId = p.id.replace(/-+$/, '');
-  const offerId = variantColor
-    ? `${cleanId}--${variantColor.toLowerCase().replace(/\s+/g, '-')}`
-    : cleanId;
+  const colorSlug = variantColor?.toLowerCase().replace(/\s+/g, '-');
+  const offerId = safeOfferId(cleanId, colorSlug);
 
   const salePrice = variantPrice ?? p.price;
   const regularPrice = p.oldPrice ?? null;
