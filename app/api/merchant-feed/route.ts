@@ -46,7 +46,7 @@ function productToItems(p: Product): string {
     <g:description>${description}</g:description>
     <g:link>${baseUrl}?color=${encodeURIComponent(variantSlug)}</g:link>
     ${image ? `<g:image_link>${escapeXml(image)}</g:image_link>` : ''}
-    <g:availability>in_stock</g:availability>
+    <g:availability>in stock</g:availability>
     <g:price>${regularPrice ? regularPrice.toFixed(2) : price} USD</g:price>
     ${regularPrice ? `<g:sale_price>${price} USD</g:sale_price>` : ''}
     <g:brand>${BRAND}</g:brand>
@@ -71,7 +71,7 @@ function productToItems(p: Product): string {
     <g:description>${description}</g:description>
     <g:link>${baseUrl}</g:link>
     ${image ? `<g:image_link>${escapeXml(image)}</g:image_link>` : ''}
-    <g:availability>in_stock</g:availability>
+    <g:availability>in stock</g:availability>
     <g:price>${oldPrice ? oldPrice.toFixed(2) : price} USD</g:price>
     ${oldPrice ? `<g:sale_price>${price} USD</g:sale_price>` : ''}
     <g:brand>${BRAND}</g:brand>
