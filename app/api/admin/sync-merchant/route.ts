@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
     const ok = results.filter(r => r.status === 'ok').length;
     const failed = results.filter(r => r.status !== 'ok');
 
-    return NextResponse.json({ synced: ok, failed: failed.length, details: failed });
+    return NextResponse.json({ synced: ok, failed: failed.length, details: failed, all: results });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[sync-merchant]', msg);

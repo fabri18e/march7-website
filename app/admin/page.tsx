@@ -1191,7 +1191,10 @@ function ProductsTab() {
                 });
                 const data = await res.json();
                 if (data.error) setSyncResult(`Error: ${data.error}`);
-                else setSyncResult(`✓ Synced ${data.synced} products to Google Merchant${data.failed ? ` (${data.failed} failed)` : ''}`);
+                else {
+                  const failMsg = data.details?.length ? ` — Error: ${data.details[0]?.status}` : '';
+                  setSyncResult(`✓ Synced ${data.synced} to Google Merchant${data.failed ? ` (${data.failed} failed${failMsg})` : ''}`);
+                }
               } catch (e) {
                 setSyncResult(`Error: ${e}`);
               } finally {
