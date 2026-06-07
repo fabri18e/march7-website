@@ -62,9 +62,8 @@ export async function POST(req: NextRequest) {
         const colorSlugs = colorPart && colorPart !== 'default' ? colorPart.split('|') : [];
         const colorDetails = colorSlugs.map((slug, i) => {
           const bundleProduct = productMap.get(product.bundleItems![i]?.replace(/-+$/, ''));
-          const KEYWORDS = ['Keyboard', 'Mouse', 'Headset', 'Headphone', 'Controller', 'Pad', 'Monitor', 'Speaker'];
           const shortName = bundleProduct
-            ? KEYWORDS.find(k => bundleProduct.name.toLowerCase().includes(k.toLowerCase())) ?? bundleProduct.name.split(' ')[0]
+            ? bundleProduct.name.split(' ').slice(0, 2).join(' ')
             : `Item ${i + 1}`;
           const colorName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
           return `${shortName}: ${colorName}`;
