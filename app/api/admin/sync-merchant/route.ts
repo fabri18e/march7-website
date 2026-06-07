@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth } from 'google-auth-library';
-
-export const runtime = 'nodejs';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { mapProductRow } from '@/lib/products';
 import type { Product } from '@/types';
 
+export const runtime = 'nodejs';
+
 const MERCHANT_ID = '5805305411';
-const DATA_SOURCE_ID = '10670973311';
 const SITE_URL = 'https://www.march7.net';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || '';
 
 async function getAuthToken(): Promise<string> {
   const keyRaw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
   if (!keyRaw) throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_KEY env variable');
-
   const credentials = JSON.parse(keyRaw);
   const auth = new GoogleAuth({
     credentials,
@@ -26,11 +24,7 @@ async function getAuthToken(): Promise<string> {
   return tokenRes.token;
 }
 
-function toMicros(amount: number): string {
-  return String(Math.round(amount * 1_000_000));
-}
-
-function buildProductInput(p: Product, variantColor?: string, variantPrice?: number, variantImage?: string) {
+function buildProduct(p: Product, variantColor?: string, variantPrice?: number, variantImage?: string) {
   const cleanId = p.id.replace(/-+$/, '');
   const offerId = variantColor
     ? `${cleanId}--${variantColor.toLowerCase().replace(/\s+/g, '-')}`
@@ -41,47 +35,39 @@ function buildProductInput(p: Product, variantColor?: string, variantPrice?: num
   const image = variantImage || p.image || p.images?.[0] || '';
   const description = (p.shortDesc || p.description || p.name).slice(0, 5000);
 
-  const attributes: Record<string, unknown> = {
+  const product: Record<string, unknown> = {
+    offerId,
     title: variantColor ? `${p.name} — ${variantColor}` : p.name,
     description,
     link: `${SITE_URL}/products/${cleanId}`,
+    contentLanguage: 'en',
+    targetCountry: 'US',
+    channel: 'online',
     availability: 'in_stock',
     condition: 'new',
     brand: 'March7',
-    price: {
-      amountMicros: toMicros(regularPrice ?? salePrice),
-      currencyCode: 'USD',
-    },
+    price: { value: (regularPrice ?? salePrice).toFixed(2), currency: 'USD' },
   };
 
-  if (image) attributes.imageLink = image;
-  if (regularPrice) attributes.salePrice = { amountMicros: toMicros(salePrice), currencyCode: 'USD' };
+  if (image) product.imageLink = image;
+  if (regularPrice) product.salePrice = { value: salePrice.toFixed(2), currency: 'USD' };
   if (variantColor) {
-    attributes.itemGroupId = cleanId;
-    attributes.color = variantColor;
+    product.itemGroupId = cleanId;
+    product.color = variantColor;
   }
   if (p.freeShipping) {
-    attributes.shipping = [{ country: 'US', service: 'Standard', price: { amountMicros: '0', currencyCode: 'USD' } }];
+    product.shipping = [{ country: 'US', service: 'Standard', price: { value: '0.00', currency: 'USD' } }];
   }
 
-  return {
-    name: `accounts/${MERCHANT_ID}/productInputs/online~en~US~${offerId}`,
-    offerId,
-    contentLanguage: 'en',
-    feedLabel: 'US',
-    channel: 'ONLINE',
-    attributes,
-  };
+  return { offerId, product };
 }
 
-async function upsertToMerchant(token: string, input: Record<string, unknown>) {
-  const dataSource = `accounts/${MERCHANT_ID}/dataSources/${DATA_SOURCE_ID}`;
-  const url = `https://merchantapi.googleapis.com/products/v1/accounts/${MERCHANT_ID}/productInputs:insert?dataSource=${encodeURIComponent(dataSource)}`;
-
+async function upsertToMerchant(token: string, product: Record<string, unknown>) {
+  const url = `https://shoppingcontent.googleapis.com/content/v2.1/${MERCHANT_ID}/products`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    body: JSON.stringify(product),
   });
   const json = await res.json();
   if (!res.ok) throw new Error(JSON.stringify(json?.error || json));
@@ -112,29 +98,28 @@ export async function POST(req: NextRequest) {
     for (const p of products) {
       if (p.variants && p.variants.length > 0) {
         for (const v of p.variants) {
-          const input = buildProductInput(p, v.color, v.price ?? p.price, v.images?.[0]);
+          const { offerId, product } = buildProduct(p, v.color, v.price ?? p.price, v.images?.[0]);
           try {
-            await upsertToMerchant(token, input);
-            results.push({ id: input.offerId as string, status: 'ok' });
+            await upsertToMerchant(token, product);
+            results.push({ id: offerId, status: 'ok' });
           } catch (e) {
-            results.push({ id: input.offerId as string, status: String(e) });
+            results.push({ id: offerId, status: String(e) });
           }
         }
       } else {
-        const input = buildProductInput(p);
+        const { offerId, product } = buildProduct(p);
         try {
-          await upsertToMerchant(token, input);
-          results.push({ id: input.offerId as string, status: 'ok' });
+          await upsertToMerchant(token, product);
+          results.push({ id: offerId, status: 'ok' });
         } catch (e) {
-          results.push({ id: input.offerId as string, status: String(e) });
+          results.push({ id: offerId, status: String(e) });
         }
       }
     }
 
     const ok = results.filter(r => r.status === 'ok').length;
     const failed = results.filter(r => r.status !== 'ok');
-
-    return NextResponse.json({ synced: ok, failed: failed.length, details: failed, all: results });
+    return NextResponse.json({ synced: ok, failed: failed.length, details: failed });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[sync-merchant]', msg);
