@@ -40,8 +40,7 @@ export async function PATCH(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Send lifecycle email based on new status (fire and forget)
-  if (order && order.email && fields.status && fields.status !== order.status) {
+  if (order && order.email) {
     const emailData = {
       to: order.email,
       orderId: order.stripe_session_id,
@@ -49,37 +48,41 @@ export async function PATCH(req: Request) {
       totalAmount: order.total_amount ?? 0,
     };
 
-    const send =
-      fields.status === 'processing' ? sendOrderProcessing(emailData) :
-      fields.status === 'shipped' ? sendOrderShipped({
-        ...emailData,
-        trackingNumber: fields.tracking_number ?? order.tracking_number,
-        trackingUrl: fields.tracking_url ?? order.tracking_url,
-        estimatedDelivery: fields.estimated_delivery ?? order.estimated_delivery,
-      }) :
-      fields.status === 'delivered' ? sendOrderDelivered(emailData) :
-      fields.status === 'refunded' ? sendOrderRefunded(emailData) :
-      fields.status === 'cancelled' ? sendOrderCancelled(emailData) :
-      null;
+    // Lifecycle email on status change
+    if (fields.status && fields.status !== order.status) {
+      try {
+        if (fields.status === 'processing') await sendOrderProcessing(emailData);
+        else if (fields.status === 'shipped') await sendOrderShipped({
+          ...emailData,
+          trackingNumber: fields.tracking_number ?? order.tracking_number,
+          trackingUrl: fields.tracking_url ?? order.tracking_url,
+          estimatedDelivery: fields.estimated_delivery ?? order.estimated_delivery,
+        });
+        else if (fields.status === 'delivered') await sendOrderDelivered(emailData);
+        else if (fields.status === 'refunded') await sendOrderRefunded(emailData);
+        else if (fields.status === 'cancelled') await sendOrderCancelled(emailData);
+      } catch (err) {
+        console.error(`[email:${fields.status}]`, err);
+      }
+    }
 
-    if (send) {
-      send.catch(err => console.error(`[email:${fields.status}]`, err));
+    // Shipped email when tracking number changes
+    if (!fields.status && fields.tracking_number && order.status === 'shipped' && fields.tracking_number !== order.tracking_number) {
+      try {
+        await sendOrderShipped({
+          ...emailData,
+          items: order.items,
+          totalAmount: order.total_amount,
+          trackingNumber: fields.tracking_number,
+          trackingUrl: fields.tracking_url ?? order.tracking_url,
+          estimatedDelivery: fields.estimated_delivery ?? order.estimated_delivery,
+        });
+      } catch (err) {
+        console.error('[email:tracking-update]', err);
+      }
     }
   } else if (order && !order.email && fields.status) {
     console.warn('[orders PATCH] No email on order, skipping lifecycle email', order.id);
-  }
-
-  // Also send shipped email if tracking number changed
-  if (order && order.email && !fields.status && fields.tracking_number && order.status === 'shipped' && fields.tracking_number !== order.tracking_number) {
-    sendOrderShipped({
-      to: order.email,
-      orderId: order.stripe_session_id,
-      items: order.items,
-      totalAmount: order.total_amount,
-      trackingNumber: fields.tracking_number,
-      trackingUrl: fields.tracking_url ?? order.tracking_url,
-      estimatedDelivery: fields.estimated_delivery ?? order.estimated_delivery,
-    }).catch(console.error);
   }
 
   return NextResponse.json({ ok: true });
