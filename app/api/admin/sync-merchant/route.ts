@@ -5,6 +5,7 @@ import { mapProductRow } from '@/lib/products';
 import type { Product } from '@/types';
 
 const MERCHANT_ID = '5805305411';
+const DATA_SOURCE_ID = '10670973311';
 const SITE_URL = 'https://www.march7.net';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || '';
 
@@ -23,56 +24,65 @@ async function getAuthToken(): Promise<string> {
   return tokenRes.token;
 }
 
-function buildProductPayload(p: Product, variantColor?: string, variantPrice?: number, variantImage?: string) {
+function toMicros(amount: number): string {
+  return String(Math.round(amount * 1_000_000));
+}
+
+function buildProductInput(p: Product, variantColor?: string, variantPrice?: number, variantImage?: string) {
   const cleanId = p.id.replace(/-+$/, '');
   const offerId = variantColor
     ? `${cleanId}--${variantColor.toLowerCase().replace(/\s+/g, '-')}`
     : cleanId;
 
-  const title = variantColor ? `${p.name} — ${variantColor}` : p.name;
-  const price = variantPrice ?? p.price;
+  const salePrice = variantPrice ?? p.price;
+  const regularPrice = p.oldPrice ?? null;
   const image = variantImage || p.image || p.images?.[0] || '';
-  const link = `${SITE_URL}/products/${cleanId}`;
   const description = (p.shortDesc || p.description || p.name).slice(0, 5000);
 
-  const payload: Record<string, unknown> = {
-    offerId,
-    title,
+  const attributes: Record<string, unknown> = {
+    title: variantColor ? `${p.name} — ${variantColor}` : p.name,
     description,
-    link,
-    availability: 'in_stock',
+    link: `${SITE_URL}/products/${cleanId}`,
+    availability: 'IN_STOCK',
     condition: 'new',
     brand: 'March7',
-    contentLanguage: 'en',
-    targetCountry: 'US',
-    channel: 'online',
-    price: { value: price.toFixed(2), currency: 'USD' },
+    price: {
+      amountMicros: toMicros(regularPrice ?? salePrice),
+      currencyCode: 'USD',
+    },
     ...(image ? { imageLink: image } : {}),
   };
 
-  if (p.oldPrice) {
-    payload.salePrice = { value: price.toFixed(2), currency: 'USD' };
-    payload.price = { value: p.oldPrice.toFixed(2), currency: 'USD' };
+  if (regularPrice) {
+    attributes.salePrice = { amountMicros: toMicros(salePrice), currencyCode: 'USD' };
   }
 
   if (variantColor) {
-    payload.itemGroupId = cleanId;
-    payload.color = variantColor;
+    attributes.itemGroupId = cleanId;
+    attributes.color = variantColor;
   }
 
   if (p.freeShipping) {
-    payload.shipping = [{ country: 'US', service: 'Standard', price: { value: '0.00', currency: 'USD' } }];
+    attributes.freeShippingThreshold = [{ country: 'US', priceThreshold: { amountMicros: '0', currencyCode: 'USD' } }];
   }
 
-  return payload;
+  return {
+    name: `accounts/${MERCHANT_ID}/productInputs/${offerId}`,
+    offerId,
+    contentLanguage: 'en',
+    feedLabel: 'US',
+    attributes,
+  };
 }
 
-async function upsertToMerchant(token: string, payload: Record<string, unknown>) {
-  const url = `https://shoppingcontent.googleapis.com/content/v2.1/${MERCHANT_ID}/products`;
+async function upsertToMerchant(token: string, input: Record<string, unknown>) {
+  const dataSource = `accounts/${MERCHANT_ID}/dataSources/${DATA_SOURCE_ID}`;
+  const url = `https://merchantapi.googleapis.com/products/v1beta/accounts/${MERCHANT_ID}/productInputs:insert?dataSource=${encodeURIComponent(dataSource)}`;
+
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(input),
   });
   const json = await res.json();
   if (!res.ok) throw new Error(JSON.stringify(json?.error || json));
@@ -80,7 +90,6 @@ async function upsertToMerchant(token: string, payload: Record<string, unknown>)
 }
 
 export async function POST(req: NextRequest) {
-  // Protect endpoint with admin secret
   const secret = req.headers.get('x-admin-secret') || '';
   if (ADMIN_SECRET && secret !== ADMIN_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -99,27 +108,26 @@ export async function POST(req: NextRequest) {
     if (error) throw new Error(error.message);
 
     const products: Product[] = (data || []).map(mapProductRow);
-
     const results: { id: string; status: string }[] = [];
 
     for (const p of products) {
       if (p.variants && p.variants.length > 0) {
         for (const v of p.variants) {
-          const payload = buildProductPayload(p, v.color, v.price ?? p.price, v.images?.[0]);
+          const input = buildProductInput(p, v.color, v.price ?? p.price, v.images?.[0]);
           try {
-            await upsertToMerchant(token, payload);
-            results.push({ id: payload.offerId as string, status: 'ok' });
+            await upsertToMerchant(token, input);
+            results.push({ id: input.offerId, status: 'ok' });
           } catch (e) {
-            results.push({ id: payload.offerId as string, status: String(e) });
+            results.push({ id: input.offerId, status: String(e) });
           }
         }
       } else {
-        const payload = buildProductPayload(p);
+        const input = buildProductInput(p);
         try {
-          await upsertToMerchant(token, payload);
-          results.push({ id: payload.offerId as string, status: 'ok' });
+          await upsertToMerchant(token, input);
+          results.push({ id: input.offerId, status: 'ok' });
         } catch (e) {
-          results.push({ id: payload.offerId as string, status: String(e) });
+          results.push({ id: input.offerId, status: String(e) });
         }
       }
     }
