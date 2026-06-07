@@ -106,7 +106,8 @@ export async function POST(req: NextRequest) {
       if (p.variants && p.variants.length > 0) {
         // Sync the base/default color version (e.g. "Keyboard — White")
         if (p.defaultColorLabel) {
-          const { offerId: baseId, product: baseProduct } = buildProduct(p, p.defaultColorLabel, p.price, p.image || p.images?.[0] || undefined);
+          const baseImage = p.image || p.images?.[0] || p.variants?.[0]?.images?.[0] || undefined;
+          const { offerId: baseId, product: baseProduct } = buildProduct(p, p.defaultColorLabel, p.price, baseImage);
           try {
             await upsertToMerchant(token, baseProduct);
             results.push({ id: baseId, status: 'ok' });
