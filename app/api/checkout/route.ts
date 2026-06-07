@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       automatic_tax: { enabled: true },
       allow_promotion_codes: true,
       shipping_address_collection: {
-        allowed_countries: ['US', 'CA', 'MX', 'GB', 'AU', 'DE', 'FR', 'ES', 'IT', 'BR'],
+        allowed_countries: ['US'],
       },
     });
 
