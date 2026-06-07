@@ -1,17 +1,25 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Product } from '@/types';
 import ProductCard from '@/components/ProductCard';
 import Filters from '@/components/Filters';
 import { searchProducts } from '@/lib/search';
+import { tiktokSearch } from '@/lib/tiktok';
 
 export default function ProductsClient({ initialProducts }: { initialProducts: Product[] }) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const searchParams = useSearchParams();
 
   const query = searchParams.get('q') || '';
+  const prevQuery = useRef('');
+  useEffect(() => {
+    if (query && query !== prevQuery.current) {
+      tiktokSearch(query);
+      prevQuery.current = query;
+    }
+  }, [query]);
   const category = searchParams.get('category') || '';
   const tag = searchParams.get('tag') || '';
   const freeShipping = searchParams.get('freeShipping') === '1';

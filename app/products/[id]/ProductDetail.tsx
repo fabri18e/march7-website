@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import ReviewSection from '@/components/ReviewSection';
 import AIAnalysis from '@/components/AIAnalysis';
 import StarRating from '@/components/StarRating';
+import { tiktokViewContent, tiktokAddToCart } from '@/lib/tiktok';
 
 function useCountdown(productId: string) {
   const [t, setT] = useState({ h: 23, m: 59, s: 59 });
@@ -64,6 +65,11 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [bundleVariants, setBundleVariants] = useState<Record<string, number | null>>({});
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    tiktokViewContent(product.id, product.name, product.price);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   useEffect(() => {
     if (searchParams.get('review') === 'true') {
@@ -132,10 +138,12 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
 
   const handleAddToCart = () => {
     addItem({ id: cartId, name: cartName, price: effectivePrice, image: cartImage });
+    tiktokAddToCart(product.id, cartName, effectivePrice);
   };
 
   const handleBuyNow = () => {
     addItem({ id: cartId, name: cartName, price: effectivePrice, image: cartImage });
+    tiktokAddToCart(product.id, cartName, effectivePrice);
     openCart();
   };
 

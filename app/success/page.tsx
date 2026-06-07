@@ -5,6 +5,7 @@ import { PageLoader } from '@/components/Spinner';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { tiktokPurchase } from '@/lib/tiktok';
 import { Suspense } from 'react';
 
 function SuccessContent() {
@@ -31,6 +32,7 @@ function SuccessContent() {
         .then(res => res.json())
         .then(data => {
           if (data.error) setSaveError(data.error);
+          else tiktokPurchase(data.totalAmount ? data.totalAmount / 100 : 0);
         })
         .catch(err => setSaveError(err.message));
     }

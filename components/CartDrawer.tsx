@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { tiktokInitiateCheckout, tiktokAddToCart } from '@/lib/tiktok';
 
 interface Suggestion { id: string; name: string; price: number; image: string | null; }
 
@@ -44,6 +45,7 @@ export default function CartDrawer() {
   }, []);
 
   const handleCheckout = async () => {
+    tiktokInitiateCheckout(total);
     setLoading(true);
     setError('');
     try {
@@ -163,7 +165,7 @@ export default function CartDrawer() {
                           <p className="text-xs text-gray-500">${s.price.toFixed(2)}</p>
                         </div>
                         <button
-                          onClick={() => addItem({ id: s.id, name: s.name, price: s.price, image: s.image })}
+                          onClick={() => { addItem({ id: s.id, name: s.name, price: s.price, image: s.image }); tiktokAddToCart(s.id, s.name, s.price); }}
                           className="text-xs font-semibold text-accent border border-accent px-2.5 py-1 rounded-lg hover:bg-accent-light transition-colors flex-shrink-0"
                         >
                           + Add

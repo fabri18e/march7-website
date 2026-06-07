@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
+import { tiktokCompleteRegistration } from '@/lib/tiktok';
 import Link from 'next/link';
 
 type Mode = 'login' | 'register';
@@ -37,7 +38,7 @@ export default function AuthPage() {
         options: { data: { full_name: name } },
       });
       if (error) { setError(error.message); }
-      else { setSuccess('Check your email to confirm your account!'); }
+      else { tiktokCompleteRegistration(); setSuccess('Check your email to confirm your account!'); }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
