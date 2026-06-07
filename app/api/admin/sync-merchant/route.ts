@@ -116,18 +116,18 @@ export async function POST(req: NextRequest) {
           const input = buildProductInput(p, v.color, v.price ?? p.price, v.images?.[0]);
           try {
             await upsertToMerchant(token, input);
-            results.push({ id: input.offerId, status: 'ok' });
+            results.push({ id: input.offerId as string, status: 'ok' });
           } catch (e) {
-            results.push({ id: input.offerId, status: String(e) });
+            results.push({ id: input.offerId as string, status: String(e) });
           }
         }
       } else {
         const input = buildProductInput(p);
         try {
           await upsertToMerchant(token, input);
-          results.push({ id: input.offerId, status: 'ok' });
+          results.push({ id: input.offerId as string, status: 'ok' });
         } catch (e) {
-          results.push({ id: input.offerId, status: String(e) });
+          results.push({ id: input.offerId as string, status: String(e) });
         }
       }
     }
