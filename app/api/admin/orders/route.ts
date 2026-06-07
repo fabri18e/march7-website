@@ -69,8 +69,8 @@ export async function PATCH(req: Request) {
     console.warn('[orders PATCH] No email on order, skipping lifecycle email', order.id);
   }
 
-  // Also send shipped email if tracking info is added without status change
-  if (order && !fields.status && fields.tracking_number && order.status === 'shipped') {
+  // Also send shipped email if tracking info is added without status change — only if first time adding tracking
+  if (order && order.email && !fields.status && fields.tracking_number && order.status === 'shipped' && !order.tracking_number) {
     sendOrderShipped({
       to: order.email,
       orderId: order.stripe_session_id,
