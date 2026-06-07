@@ -41,30 +41,32 @@ export async function PATCH(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // Send lifecycle email based on new status (fire and forget)
-  if (order && fields.status && fields.status !== order.status) {
+  if (order && order.email && fields.status && fields.status !== order.status) {
     const emailData = {
       to: order.email,
       orderId: order.stripe_session_id,
-      items: order.items,
-      totalAmount: order.total_amount,
+      items: order.items ?? [],
+      totalAmount: order.total_amount ?? 0,
     };
 
-    if (fields.status === 'processing') {
-      sendOrderProcessing(emailData).catch(console.error);
-    } else if (fields.status === 'shipped') {
-      sendOrderShipped({
+    const send =
+      fields.status === 'processing' ? sendOrderProcessing(emailData) :
+      fields.status === 'shipped' ? sendOrderShipped({
         ...emailData,
         trackingNumber: fields.tracking_number ?? order.tracking_number,
         trackingUrl: fields.tracking_url ?? order.tracking_url,
         estimatedDelivery: fields.estimated_delivery ?? order.estimated_delivery,
-      }).catch(console.error);
-    } else if (fields.status === 'delivered') {
-      sendOrderDelivered(emailData).catch(console.error);
-    } else if (fields.status === 'refunded') {
-      sendOrderRefunded(emailData).catch(console.error);
-    } else if (fields.status === 'cancelled') {
-      sendOrderCancelled(emailData).catch(console.error);
+      }) :
+      fields.status === 'delivered' ? sendOrderDelivered(emailData) :
+      fields.status === 'refunded' ? sendOrderRefunded(emailData) :
+      fields.status === 'cancelled' ? sendOrderCancelled(emailData) :
+      null;
+
+    if (send) {
+      send.catch(err => console.error(`[email:${fields.status}]`, err));
     }
+  } else if (order && !order.email && fields.status) {
+    console.warn('[orders PATCH] No email on order, skipping lifecycle email', order.id);
   }
 
   // Also send shipped email if tracking info is added without status change
