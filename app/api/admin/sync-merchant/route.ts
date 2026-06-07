@@ -110,44 +110,40 @@ export async function POST(req: NextRequest) {
     if (error) throw new Error(error.message);
 
     const products: Product[] = (data || []).map(mapProductRow);
-    const results: { id: string; status: string }[] = [];
+
+    // Build all tasks to run in parallel
+    const tasks: { id: string; fn: () => Promise<unknown> }[] = [];
 
     for (const p of products) {
       if (p.variants && p.variants.length > 0) {
-        // Delete old base (no-color) entry if it exists — avoids duplicates
+        // Delete stale no-color entry (fire-and-forget, won't block)
         const oldBaseId = p.id.replace(/-+$/, '').slice(0, 50).replace(/-+$/, '');
-        await deleteFromMerchant(token, oldBaseId).catch(() => {});
+        tasks.push({ id: `delete:${oldBaseId}`, fn: () => deleteFromMerchant(token, oldBaseId) });
 
-        // Sync the base/default color version (e.g. "Keyboard — White")
+        // Default color version
         if (p.defaultColorLabel) {
           const baseImage = p.image || p.images?.[0] || p.variants?.[0]?.images?.[0] || undefined;
-          const { offerId: baseId, product: baseProduct } = buildProduct(p, p.defaultColorLabel, p.price, baseImage);
-          try {
-            await upsertToMerchant(token, baseProduct);
-            results.push({ id: baseId, status: 'ok' });
-          } catch (e) {
-            results.push({ id: baseId, status: String(e) });
-          }
+          const { offerId, product } = buildProduct(p, p.defaultColorLabel, p.price, baseImage);
+          tasks.push({ id: offerId, fn: () => upsertToMerchant(token, product) });
         }
+
+        // Each color variant
         for (const v of p.variants) {
           const { offerId, product } = buildProduct(p, v.color, v.price ?? p.price, v.images?.[0]);
-          try {
-            await upsertToMerchant(token, product);
-            results.push({ id: offerId, status: 'ok' });
-          } catch (e) {
-            results.push({ id: offerId, status: String(e) });
-          }
+          tasks.push({ id: offerId, fn: () => upsertToMerchant(token, product) });
         }
       } else {
         const { offerId, product } = buildProduct(p);
-        try {
-          await upsertToMerchant(token, product);
-          results.push({ id: offerId, status: 'ok' });
-        } catch (e) {
-          results.push({ id: offerId, status: String(e) });
-        }
+        tasks.push({ id: offerId, fn: () => upsertToMerchant(token, product) });
       }
     }
+
+    // Run all tasks in parallel
+    const settled = await Promise.allSettled(tasks.map(t => t.fn()));
+    const results = tasks.map((t, i) => ({
+      id: t.id,
+      status: settled[i].status === 'fulfilled' ? 'ok' : String((settled[i] as PromiseRejectedResult).reason),
+    })).filter(r => !r.id.startsWith('delete:'));
 
     const ok = results.filter(r => r.status === 'ok').length;
     const failed = results.filter(r => r.status !== 'ok');
