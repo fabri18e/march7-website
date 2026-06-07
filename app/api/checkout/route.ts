@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
       if (product.isBundle && product.bundleItems?.length) {
         const bundleTotal = product.bundleItems.reduce((sum, bundleItemId) => {
-          return sum + (productMap.get(bundleItemId)?.price ?? 0);
+          return sum + (productMap.get(bundleItemId.replace(/-+$/, ''))?.price ?? 0);
         }, 0);
         price = Math.round(bundleTotal * (1 - (product.bundleDiscount ?? 0) / 100) * 100) / 100;
         name = `🎁 ${product.name}`;
