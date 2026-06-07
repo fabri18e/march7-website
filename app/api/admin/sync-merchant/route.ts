@@ -70,6 +70,15 @@ function buildProduct(p: Product, variantColor?: string, variantPrice?: number, 
   return { offerId, product };
 }
 
+async function deleteFromMerchant(token: string, offerId: string) {
+  const productId = `online:en:US:${offerId}`;
+  const url = `https://shoppingcontent.googleapis.com/content/v2.1/${MERCHANT_ID}/products/${encodeURIComponent(productId)}`;
+  await fetch(url, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 async function upsertToMerchant(token: string, product: Record<string, unknown>) {
   const url = `https://shoppingcontent.googleapis.com/content/v2.1/${MERCHANT_ID}/products`;
   const res = await fetch(url, {
@@ -105,6 +114,10 @@ export async function POST(req: NextRequest) {
 
     for (const p of products) {
       if (p.variants && p.variants.length > 0) {
+        // Delete old base (no-color) entry if it exists — avoids duplicates
+        const oldBaseId = p.id.replace(/-+$/, '').slice(0, 50).replace(/-+$/, '');
+        await deleteFromMerchant(token, oldBaseId).catch(() => {});
+
         // Sync the base/default color version (e.g. "Keyboard — White")
         if (p.defaultColorLabel) {
           const baseImage = p.image || p.images?.[0] || p.variants?.[0]?.images?.[0] || undefined;
