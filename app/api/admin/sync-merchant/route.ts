@@ -104,15 +104,13 @@ export async function POST(req: NextRequest) {
 
     for (const p of products) {
       if (p.variants && p.variants.length > 0) {
-        // Sync the base/default color as a variant if defaultColorLabel is set
-        if (p.defaultColorLabel) {
-          const { offerId, product } = buildProduct(p, p.defaultColorLabel, p.price, p.image || p.images?.[0] || undefined);
-          try {
-            await upsertToMerchant(token, product);
-            results.push({ id: offerId, status: 'ok' });
-          } catch (e) {
-            results.push({ id: offerId, status: String(e) });
-          }
+        // Sync the base product (the "normal" version without color suffix)
+        const { offerId: baseId, product: baseProduct } = buildProduct(p);
+        try {
+          await upsertToMerchant(token, baseProduct);
+          results.push({ id: baseId, status: 'ok' });
+        } catch (e) {
+          results.push({ id: baseId, status: String(e) });
         }
         for (const v of p.variants) {
           const { offerId, product } = buildProduct(p, v.color, v.price ?? p.price, v.images?.[0]);
