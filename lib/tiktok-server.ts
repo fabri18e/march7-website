@@ -25,7 +25,7 @@ export async function tiktokServerPurchase(data: PurchaseData) {
     event_source: 'web',
     event_source_id: PIXEL_ID,
     data: [{
-      event: 'PlaceAnOrder',
+      event: 'Purchase',
       event_time: Math.floor(Date.now() / 1000),
       event_id: data.orderId || undefined,
       user: {

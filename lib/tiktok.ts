@@ -42,7 +42,7 @@ export function tiktokInitiateCheckout(value: number, items: { id: string; name:
 }
 
 export function tiktokPurchase(value: number) {
-  ttq()?.track('PlaceAnOrder', {
+  ttq()?.track('Purchase', {
     contents: [],
     value,
     currency: 'USD',
