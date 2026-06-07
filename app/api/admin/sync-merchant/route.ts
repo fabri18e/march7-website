@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth } from 'google-auth-library';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { mapProductRow } from '@/lib/products';
+import { mapProductRow, getAllProductVariants } from '@/lib/products';
 import type { Product } from '@/types';
 
 export const runtime = 'nodejs';
@@ -116,21 +116,13 @@ export async function POST(req: NextRequest) {
 
     for (const p of products) {
       if (p.variants && p.variants.length > 0) {
-        // Delete stale no-color entry (fire-and-forget, won't block)
+        // Delete stale no-color entry
         const oldBaseId = p.id.replace(/-+$/, '').slice(0, 50).replace(/-+$/, '');
         tasks.push({ id: `delete:${oldBaseId}`, fn: () => deleteFromMerchant(token, oldBaseId) });
 
-        // Default color version — only if not already covered by a configured variant
-        const variantColors = p.variants.map(v => v.color.toLowerCase());
-        if (p.defaultColorLabel && !variantColors.includes(p.defaultColorLabel.toLowerCase())) {
-          const baseImage = p.image || p.images?.[0] || p.variants?.[0]?.images?.[0] || undefined;
-          const { offerId, product } = buildProduct(p, p.defaultColorLabel, p.price, baseImage);
-          tasks.push({ id: offerId, fn: () => upsertToMerchant(token, product) });
-        }
-
-        // Each color variant
-        for (const v of p.variants) {
-          const { offerId, product } = buildProduct(p, v.color, v.price ?? p.price, v.images?.[0]);
+        // All colors including default — via shared helper
+        for (const v of getAllProductVariants(p)) {
+          const { offerId, product } = buildProduct(p, v.color, v.price, v.images?.[0]);
           tasks.push({ id: offerId, fn: () => upsertToMerchant(token, product) });
         }
       } else {

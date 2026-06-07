@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { mapProductRow } from '@/lib/products';
+import { mapProductRow, getAllProductVariants } from '@/lib/products';
 import type { Product } from '@/types';
 
 const SITE_URL = 'https://www.march7.net';
@@ -28,24 +28,25 @@ function productToItems(p: Product): string {
   const category = CATEGORY_MAP[p.category] || 'Electronics > Electronics Accessories';
   const description = escapeXml((p.shortDesc || p.description || p.name).slice(0, 5000));
 
-  // Products with variants generate one entry per color
+  // Products with variants generate one entry per color (including default)
   if (p.variants && p.variants.length > 0) {
-    const variantColors = p.variants.map(v => v.color.toLowerCase());
     const cleanId = p.id.replace(/-+$/, '');
+    const allVariants = getAllProductVariants(p);
 
-    const variantItems = p.variants.map(v => {
-      const variantSlug = v.color.toLowerCase().replace(/\s+/g, '-');
+    return allVariants.map(v => {
+      const colorSlug = v.color.toLowerCase().replace(/\s+/g, '-');
       const image = v.images?.[0] || p.image || p.images?.[0] || '';
-      const price = (v.price ?? p.price).toFixed(2);
-      const regularPrice = (v.oldPrice ?? p.oldPrice ?? null);
-      const variantId = `${cleanId}--${variantSlug}`;
+      const price = v.price.toFixed(2);
+      const regularPrice = v.oldPrice ?? null;
+      const variantId = `${cleanId}--${colorSlug}`;
+      const link = v.isDefault ? baseUrl : `${baseUrl}?color=${encodeURIComponent(colorSlug)}`;
 
       return `
   <item>
     <g:id>${escapeXml(variantId)}</g:id>
     <g:title>${escapeXml(`${p.name} — ${v.color}`)}</g:title>
     <g:description>${description}</g:description>
-    <g:link>${baseUrl}?color=${encodeURIComponent(variantSlug)}</g:link>
+    <g:link>${link}</g:link>
     ${image ? `<g:image_link>${escapeXml(image)}</g:image_link>` : ''}
     <g:availability>in stock</g:availability>
     <g:price>${regularPrice ? regularPrice.toFixed(2) : price} USD</g:price>
@@ -57,36 +58,7 @@ function productToItems(p: Product): string {
     <g:color>${escapeXml(v.color)}</g:color>
     ${p.freeShipping ? `<g:shipping><g:country>US</g:country><g:service>Standard</g:service><g:price>0 USD</g:price></g:shipping>` : ''}
   </item>`;
-    });
-
-    // Default color — only if not already covered by a configured variant
-    if (p.defaultColorLabel && !variantColors.includes(p.defaultColorLabel.toLowerCase())) {
-      const defaultSlug = p.defaultColorLabel.toLowerCase().replace(/\s+/g, '-');
-      const defaultImage = p.image || p.images?.[0] || p.variants[0]?.images?.[0] || '';
-      const defaultPrice = p.price.toFixed(2);
-      const regularPrice = p.oldPrice ?? null;
-      const defaultId = `${cleanId}--${defaultSlug}`;
-
-      variantItems.unshift(`
-  <item>
-    <g:id>${escapeXml(defaultId)}</g:id>
-    <g:title>${escapeXml(`${p.name} — ${p.defaultColorLabel}`)}</g:title>
-    <g:description>${description}</g:description>
-    <g:link>${baseUrl}</g:link>
-    ${defaultImage ? `<g:image_link>${escapeXml(defaultImage)}</g:image_link>` : ''}
-    <g:availability>in stock</g:availability>
-    <g:price>${regularPrice ? regularPrice.toFixed(2) : defaultPrice} USD</g:price>
-    ${regularPrice ? `<g:sale_price>${defaultPrice} USD</g:sale_price>` : ''}
-    <g:brand>${BRAND}</g:brand>
-    <g:condition>new</g:condition>
-    <g:google_product_category>${escapeXml(category)}</g:google_product_category>
-    <g:item_group_id>${escapeXml(cleanId)}</g:item_group_id>
-    <g:color>${escapeXml(p.defaultColorLabel)}</g:color>
-    ${p.freeShipping ? `<g:shipping><g:country>US</g:country><g:service>Standard</g:service><g:price>0 USD</g:price></g:shipping>` : ''}
-  </item>`);
-    }
-
-    return variantItems.join('');
+    }).join('');
   }
 
   // Single product (no variants)

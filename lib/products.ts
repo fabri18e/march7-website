@@ -34,6 +34,27 @@ export function mapProductRow(row: Record<string, unknown>): Product {
   };
 }
 
+export function getAllProductVariants(p: Product): Array<{ color: string; price: number; images: string[]; oldPrice?: number | null; isDefault?: boolean }> {
+  const variantColors = p.variants?.map(v => v.color.toLowerCase()) ?? [];
+  const all = (p.variants ?? []).map(v => ({
+    color: v.color,
+    price: v.price ?? p.price,
+    images: v.images ?? [],
+    oldPrice: v.oldPrice ?? p.oldPrice ?? null,
+    isDefault: false,
+  }));
+  if (p.defaultColorLabel && !variantColors.includes(p.defaultColorLabel.toLowerCase())) {
+    all.unshift({
+      color: p.defaultColorLabel,
+      price: p.price,
+      images: p.image ? [p.image] : (p.images ?? []),
+      oldPrice: p.oldPrice ?? null,
+      isDefault: true,
+    });
+  }
+  return all;
+}
+
 export async function getAllProducts(): Promise<Product[]> {
   const result = await fetchSupabaseProducts();
   if (result.error) console.error('[products] Supabase error:', result.error);
