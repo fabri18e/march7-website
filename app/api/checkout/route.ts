@@ -15,7 +15,7 @@ async function fetchProductsForCheckout(): Promise<Map<string, Product>> {
   const { data, error } = await supabase
     .from('products')
     .select('*')
-    .eq('active', true);
+    .neq('active', false);
 
   if (error || !data?.length) throw new Error('Could not load products. Please try again.');
   const map = new Map<string, Product>();
