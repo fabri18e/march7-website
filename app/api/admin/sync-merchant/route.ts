@@ -41,11 +41,15 @@ function buildProductInput(p: Product, variantColor?: string, variantPrice?: num
   const image = variantImage || p.image || p.images?.[0] || '';
   const description = (p.shortDesc || p.description || p.name).slice(0, 5000);
 
-  const attributes: Record<string, unknown> = {
+  const input: Record<string, unknown> = {
+    name: `accounts/${MERCHANT_ID}/productInputs/${offerId}`,
+    offerId,
+    contentLanguage: 'en',
+    feedLabel: 'US',
     title: variantColor ? `${p.name} — ${variantColor}` : p.name,
     description,
     link: `${SITE_URL}/products/${cleanId}`,
-    availability: 'IN_STOCK',
+    availability: 'in_stock',
     condition: 'new',
     brand: 'March7',
     price: {
@@ -56,25 +60,19 @@ function buildProductInput(p: Product, variantColor?: string, variantPrice?: num
   };
 
   if (regularPrice) {
-    attributes.salePrice = { amountMicros: toMicros(salePrice), currencyCode: 'USD' };
+    input.salePrice = { amountMicros: toMicros(salePrice), currencyCode: 'USD' };
   }
 
   if (variantColor) {
-    attributes.itemGroupId = cleanId;
-    attributes.color = variantColor;
+    input.itemGroupId = cleanId;
+    input.color = variantColor;
   }
 
   if (p.freeShipping) {
-    attributes.freeShippingThreshold = [{ country: 'US', priceThreshold: { amountMicros: '0', currencyCode: 'USD' } }];
+    input.shipping = [{ country: 'US', service: 'Standard', price: { amountMicros: '0', currencyCode: 'USD' } }];
   }
 
-  return {
-    name: `accounts/${MERCHANT_ID}/productInputs/${offerId}`,
-    offerId,
-    contentLanguage: 'en',
-    feedLabel: 'US',
-    attributes,
-  };
+  return input;
 }
 
 async function upsertToMerchant(token: string, input: Record<string, unknown>) {
