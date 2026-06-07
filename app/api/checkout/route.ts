@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const productMap = await fetchProductsForCheckout();
 
     const lineItems = items.map(item => {
-      const baseId = item.id.split('--')[0];
+      const baseId = item.id.split('--')[0].replace(/-+$/, '');
       const product = productMap.get(baseId);
       if (!product) {
         console.error('[checkout] Unknown product:', baseId, '— available IDs:', [...productMap.keys()]);
