@@ -58,7 +58,11 @@ export async function POST(req: NextRequest) {
           return sum + (productMap.get(bundleItemId.replace(/-+$/, ''))?.price ?? 0);
         }, 0);
         price = Math.round(bundleTotal * (1 - (product.bundleDiscount ?? 0) / 100) * 100) / 100;
-        name = `🎁 ${product.name}`;
+        const colorPart = item.id.includes('--') ? item.id.split('--')[1] : '';
+        const colors = colorPart && colorPart !== 'default'
+          ? colorPart.split('|').map(c => c.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ')
+          : '';
+        name = `🎁 ${product.name}${colors ? ` (${colors})` : ''}`;
       } else if (item.id.includes('--')) {
         const variantSlug = item.id.split('--')[1];
         const variant = product.variants?.find(v =>
