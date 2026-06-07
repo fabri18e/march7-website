@@ -27,9 +27,10 @@ async function getAuthToken(): Promise<string> {
 function safeOfferId(base: string, colorSuffix?: string): string {
   if (colorSuffix) {
     const suffix = `--${colorSuffix}`;
-    return `${base.slice(0, 50 - suffix.length)}${suffix}`.slice(0, 50);
+    const trimmed = base.slice(0, 50 - suffix.length).replace(/-+$/, '');
+    return `${trimmed}${suffix}`.slice(0, 50);
   }
-  return base.slice(0, 50);
+  return base.slice(0, 50).replace(/-+$/, '');
 }
 
 function buildProduct(p: Product, variantColor?: string, variantPrice?: number, variantImage?: string) {
