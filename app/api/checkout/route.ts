@@ -21,7 +21,7 @@ async function fetchProductsForCheckout(): Promise<Map<string, Product>> {
   const map = new Map<string, Product>();
   for (const row of data) {
     const p = mapProductRow(row);
-    map.set(p.id, p);
+    map.set(p.id.replace(/-+$/, ''), p);
   }
   return map;
 }
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const productMap = await fetchProductsForCheckout();
 
     const lineItems = items.map(item => {
-      const baseId = item.id.split('--')[0].replace(/-+$/, '');
+      const baseId = item.id.split('--')[0];
       const product = productMap.get(baseId);
       if (!product) {
         console.error('[checkout] Unknown product:', baseId, '— available IDs:', [...productMap.keys()]);
