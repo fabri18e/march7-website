@@ -120,8 +120,9 @@ export async function POST(req: NextRequest) {
         const oldBaseId = p.id.replace(/-+$/, '').slice(0, 50).replace(/-+$/, '');
         tasks.push({ id: `delete:${oldBaseId}`, fn: () => deleteFromMerchant(token, oldBaseId) });
 
-        // Default color version
-        if (p.defaultColorLabel) {
+        // Default color version — only if not already covered by a configured variant
+        const variantColors = p.variants.map(v => v.color.toLowerCase());
+        if (p.defaultColorLabel && !variantColors.includes(p.defaultColorLabel.toLowerCase())) {
           const baseImage = p.image || p.images?.[0] || p.variants?.[0]?.images?.[0] || undefined;
           const { offerId, product } = buildProduct(p, p.defaultColorLabel, p.price, baseImage);
           tasks.push({ id: offerId, fn: () => upsertToMerchant(token, product) });
