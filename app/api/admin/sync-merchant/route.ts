@@ -41,11 +41,7 @@ function buildProductInput(p: Product, variantColor?: string, variantPrice?: num
   const image = variantImage || p.image || p.images?.[0] || '';
   const description = (p.shortDesc || p.description || p.name).slice(0, 5000);
 
-  const input: Record<string, unknown> = {
-    name: `accounts/${MERCHANT_ID}/productInputs/${offerId}`,
-    offerId,
-    contentLanguage: 'en',
-    feedLabel: 'US',
+  const attributes: Record<string, unknown> = {
     title: variantColor ? `${p.name} — ${variantColor}` : p.name,
     description,
     link: `${SITE_URL}/products/${cleanId}`,
@@ -56,23 +52,26 @@ function buildProductInput(p: Product, variantColor?: string, variantPrice?: num
       amountMicros: toMicros(regularPrice ?? salePrice),
       currencyCode: 'USD',
     },
-    ...(image ? { imageLink: image } : {}),
   };
 
-  if (regularPrice) {
-    input.salePrice = { amountMicros: toMicros(salePrice), currencyCode: 'USD' };
-  }
-
+  if (image) attributes.imageLink = image;
+  if (regularPrice) attributes.salePrice = { amountMicros: toMicros(salePrice), currencyCode: 'USD' };
   if (variantColor) {
-    input.itemGroupId = cleanId;
-    input.color = variantColor;
+    attributes.itemGroupId = cleanId;
+    attributes.color = variantColor;
   }
-
   if (p.freeShipping) {
-    input.shipping = [{ country: 'US', service: 'Standard', price: { amountMicros: '0', currencyCode: 'USD' } }];
+    attributes.shipping = [{ country: 'US', service: 'Standard', price: { amountMicros: '0', currencyCode: 'USD' } }];
   }
 
-  return input;
+  return {
+    name: `accounts/${MERCHANT_ID}/productInputs/online~en~US~${offerId}`,
+    offerId,
+    contentLanguage: 'en',
+    feedLabel: 'US',
+    channel: 'ONLINE',
+    attributes,
+  };
 }
 
 async function upsertToMerchant(token: string, input: Record<string, unknown>) {
