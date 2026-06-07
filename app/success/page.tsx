@@ -47,7 +47,10 @@ function SuccessContent() {
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-3">Order Confirmed!</h1>
         <p className="text-gray-500 mb-2">Thank you for your purchase. You&apos;ll receive a confirmation email shortly.</p>
-        <p className="text-sm text-gray-400 mb-8">Your payment was processed securely.</p>
+        <p className="text-sm text-gray-400 mb-2">Your payment was processed securely.</p>
+        <p className="text-xs text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 mb-8">
+          Don&apos;t see the email? Check your <strong>spam or junk folder</strong> and mark it as "Not spam".
+        </p>
 
         {saveError && (
           <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg mb-4">
