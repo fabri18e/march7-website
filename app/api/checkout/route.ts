@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         });
         name = `🎁 ${product.name}${colorDetails.length ? ` (${colorDetails.join(' · ')})` : ''}`;
       } else if (item.id.includes('--')) {
-        const variantSlug = item.id.split('--')[1];
+        const variantSlug = item.id.split('--')[1]?.replace(/^-+|-+$/g, '');
         const variant = product.variants?.find(v =>
           v.color.toLowerCase().replace(/\s+/g, '-') === variantSlug
         );
