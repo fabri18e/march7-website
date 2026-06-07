@@ -59,10 +59,17 @@ export async function POST(req: NextRequest) {
         }, 0);
         price = Math.round(bundleTotal * (1 - (product.bundleDiscount ?? 0) / 100) * 100) / 100;
         const colorPart = item.id.includes('--') ? item.id.split('--')[1] : '';
-        const colors = colorPart && colorPart !== 'default'
-          ? colorPart.split('|').map(c => c.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ')
-          : '';
-        name = `🎁 ${product.name}${colors ? ` (${colors})` : ''}`;
+        const colorSlugs = colorPart && colorPart !== 'default' ? colorPart.split('|') : [];
+        const colorDetails = colorSlugs.map((slug, i) => {
+          const bundleProduct = productMap.get(product.bundleItems![i]?.replace(/-+$/, ''));
+          const KEYWORDS = ['Keyboard', 'Mouse', 'Headset', 'Headphone', 'Controller', 'Pad', 'Monitor', 'Speaker'];
+          const shortName = bundleProduct
+            ? KEYWORDS.find(k => bundleProduct.name.toLowerCase().includes(k.toLowerCase())) ?? bundleProduct.name.split(' ')[0]
+            : `Item ${i + 1}`;
+          const colorName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          return `${shortName}: ${colorName}`;
+        });
+        name = `🎁 ${product.name}${colorDetails.length ? ` (${colorDetails.join(' · ')})` : ''}`;
       } else if (item.id.includes('--')) {
         const variantSlug = item.id.split('--')[1];
         const variant = product.variants?.find(v =>
