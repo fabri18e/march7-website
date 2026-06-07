@@ -78,6 +78,11 @@ function ctaButton(href: string, text: string, color = '#2563EB') {
   return `<a href="${href}" style="display:inline-block;background:${color};color:#FFFFFF;font-size:14px;font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none">${text}</a>`;
 }
 
+function orderBadge(orderId: string) {
+  const num = orderId.replace('paypal_', '').slice(-10).toUpperCase();
+  return `<div style="display:inline-block;background:#0F172A;color:#FFFFFF;font-size:13px;font-weight:700;font-family:monospace;padding:7px 18px;border-radius:8px;margin-bottom:28px;letter-spacing:0.08em">Order #${num}</div>`;
+}
+
 // ─── 0. Admin: New Order Alert ───────────────────────────────────────────────
 
 export async function sendAdminOrderAlert({
@@ -203,10 +208,8 @@ export async function sendOrderConfirmation({
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">🎉</div>
       <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Order Confirmed!</h1>
-      <p style="margin:0 0 6px;color:#6B7280;font-size:15px">Thank you for choosing March7. We're getting your order ready.</p>
-      <p style="margin:0 0 28px;font-size:12px;color:#9CA3AF;font-family:monospace">
-        Order #${orderId.replace('paypal_', '').slice(-10).toUpperCase()}
-      </p>
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">Thank you for choosing March7. We're getting your order ready.</p>
+      ${orderBadge(orderId)}
     </div>
     <div style="padding:0 32px 32px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
@@ -230,10 +233,8 @@ export async function sendOrderProcessing({
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">⚙️</div>
       <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">We're Preparing Your Order</h1>
-      <p style="margin:0 0 6px;color:#6B7280;font-size:15px">Our team is carefully packing your items. You'll get another update when it ships.</p>
-      <p style="margin:0 0 28px;font-size:12px;color:#9CA3AF;font-family:monospace">
-        Order #${orderId.replace('paypal_', '').slice(-10).toUpperCase()}
-      </p>
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">Our team is carefully packing your items. You'll get another update when it ships.</p>
+      ${orderBadge(orderId)}
     </div>
     <div style="padding:0 32px 32px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
@@ -265,7 +266,8 @@ export async function sendOrderShipped({
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">📦</div>
       <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Your Order Is On Its Way!</h1>
-      <p style="margin:0 0 28px;color:#6B7280;font-size:15px">Your package has been shipped and is heading to you.</p>
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">Your package has been shipped and is heading to you.</p>
+      ${orderBadge(orderId)}
     </div>
     ${trackingBlock}
     <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
@@ -294,9 +296,10 @@ export async function sendOrderDelivered({
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">✅</div>
       <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Your Order Was Delivered!</h1>
-      <p style="margin:0 0 28px;color:#6B7280;font-size:15px">
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">
         We hope you love your purchase. Enjoy your new gear!
       </p>
+      ${orderBadge(orderId)}
     </div>
     <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
 
@@ -329,10 +332,8 @@ export async function sendOrderRefunded({
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">💸</div>
       <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Your Refund Is On Its Way</h1>
-      <p style="margin:0 0 6px;color:#6B7280;font-size:15px">We've processed a full refund for your order. It usually takes 5–10 business days to appear on your statement depending on your bank.</p>
-      <p style="margin:0 0 28px;font-size:12px;color:#9CA3AF;font-family:monospace">
-        Order #${orderId.replace('paypal_', '').slice(-10).toUpperCase()}
-      </p>
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">We've processed a full refund for your order. It usually takes 5–10 business days to appear on your statement depending on your bank.</p>
+      ${orderBadge(orderId)}
     </div>
     <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
     <div style="margin:0 32px 28px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 18px;text-align:center">
@@ -356,10 +357,8 @@ export async function sendOrderCancelled({
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">❌</div>
       <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Order Cancelled</h1>
-      <p style="margin:0 0 6px;color:#6B7280;font-size:15px">Your order has been cancelled. If you were charged, a full refund will be processed within 5–10 business days.</p>
-      <p style="margin:0 0 28px;font-size:12px;color:#9CA3AF;font-family:monospace">
-        Order #${orderId.replace('paypal_', '').slice(-10).toUpperCase()}
-      </p>
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">Your order has been cancelled. If you were charged, a full refund will be processed within 5–10 business days.</p>
+      ${orderBadge(orderId)}
     </div>
     <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
