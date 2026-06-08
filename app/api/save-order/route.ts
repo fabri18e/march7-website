@@ -28,6 +28,9 @@ export async function POST(req: NextRequest) {
       total: (item.amount_total ?? 0) / 100,
     }));
 
+    const totalAmount = session.amount_total
+      ?? lineItems.data.reduce((sum, item) => sum + (item.amount_total ?? 0), 0);
+
     const rawAddr = session.collected_information?.shipping_details;
     const shippingAddress = rawAddr ? { name: rawAddr.name ?? null, ...rawAddr.address } : null;
 
@@ -40,13 +43,13 @@ export async function POST(req: NextRequest) {
       .eq('stripe_session_id', session.id)
       .maybeSingle();
 
-    if (existing) return NextResponse.json({ ok: true, totalAmount: session.amount_total, orderItems });
+    if (existing) return NextResponse.json({ ok: true, totalAmount, orderItems });
 
     const { error } = await supabase.from('orders').insert({
       stripe_session_id: session.id,
       user_id: session.metadata?.user_id || null,
       email: session.customer_details?.email || session.metadata?.email || '',
-      total_amount: session.amount_total || 0,
+      total_amount: totalAmount,
       status: 'paid',
       items: orderItems,
       shipping_address: shippingAddress,
@@ -65,19 +68,19 @@ export async function POST(req: NextRequest) {
           to: customerEmail,
           orderId: session.id,
           items: orderItems,
-          totalAmount: session.amount_total || 0,
+          totalAmount,
         }).catch(err => console.error('[email:confirmation]', err));
       }
       sendAdminOrderAlert({
         orderId: session.id,
         email: customerEmail || '',
         items: orderItems,
-        totalAmount: session.amount_total || 0,
+        totalAmount,
         shippingAddress: session.collected_information?.shipping_details?.address as unknown as Record<string, string | null> ?? null,
       }).catch(err => console.error('[email:admin-alert]', err));
     }
 
-    return NextResponse.json({ ok: true, totalAmount: session.amount_total, orderItems });
+    return NextResponse.json({ ok: true, totalAmount, orderItems });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[save-order]', message);
