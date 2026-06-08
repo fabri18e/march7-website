@@ -45,7 +45,7 @@ function SuccessContent() {
                 transaction_id: sessionId,
                 value: amount,
                 currency: 'USD',
-                items: items.map(i => ({ item_id: i.id, item_name: i.name, quantity: i.quantity })),
+                items: items.map((i: { id: string; name: string; quantity: number }) => ({ item_id: i.id, item_name: i.name, quantity: i.quantity })),
               });
             }
           }
