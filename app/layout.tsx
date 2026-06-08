@@ -58,12 +58,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={inter.variable}>
       <head>
         {/* Google Analytics */}
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-E6PH9P35XD" strategy="afterInteractive" />
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-5J79VCN4Z0" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'G-E6PH9P35XD');
+          gtag('config', 'G-5J79VCN4Z0');
         `}</Script>
         {/* TikTok Pixel */}
         <Script id="tiktok-pixel" strategy="afterInteractive">{`
