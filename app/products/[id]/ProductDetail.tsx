@@ -154,7 +154,8 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 pb-28 lg:pb-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-400 mb-8">
         <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
@@ -433,31 +434,6 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
             </div>
           )}
 
-          <p className="text-gray-600 leading-relaxed">{product.shortDesc}</p>
-
-          {product.features.length > 0 && (
-            <div>
-              <ul className="space-y-2">
-                {(showAllFeatures ? product.features : product.features.slice(0, 3)).map((f, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
-                    <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              {product.features.length > 3 && (
-                <button
-                  onClick={() => setShowAllFeatures(s => !s)}
-                  className="mt-2 text-xs text-accent hover:underline font-medium flex items-center gap-1"
-                >
-                  {showAllFeatures ? 'Show less ▲' : `Show ${product.features.length - 3} more ▼`}
-                </button>
-              )}
-            </div>
-          )}
-
           <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3">
             <span className="text-xl flex-shrink-0">🔥</span>
             <div>
@@ -495,6 +471,31 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
               </div>
             ))}
           </div>
+
+          <p className="text-gray-600 leading-relaxed">{product.shortDesc}</p>
+
+          {product.features.length > 0 && (
+            <div>
+              <ul className="space-y-2">
+                {(showAllFeatures ? product.features : product.features.slice(0, 3)).map((f, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
+                    <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              {product.features.length > 3 && (
+                <button
+                  onClick={() => setShowAllFeatures(s => !s)}
+                  className="mt-2 text-xs text-accent hover:underline font-medium flex items-center gap-1"
+                >
+                  {showAllFeatures ? 'Show less ▲' : `Show ${product.features.length - 3} more ▼`}
+                </button>
+              )}
+            </div>
+          )}
 
           {product.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-2 border-t border-gray-100">
@@ -760,6 +761,27 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
         );
       })()}
     </div>
+
+      {/* Sticky buy bar — mobile & tablet only */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-gray-200 shadow-2xl px-4 py-3 flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-gray-400 truncate">{product.name}</p>
+          <p className="text-lg font-bold text-gray-900 leading-tight">${effectivePrice.toFixed(2)}</p>
+        </div>
+        <button
+          onClick={handleAddToCart}
+          className="border-2 border-accent text-accent hover:bg-accent-light font-semibold py-2.5 px-4 rounded-xl transition-colors text-sm whitespace-nowrap"
+        >
+          🛒 Cart
+        </button>
+        <button
+          onClick={handleBuyNow}
+          className="bg-accent hover:bg-accent-hover text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm whitespace-nowrap"
+        >
+          ⚡ Buy Now
+        </button>
+      </div>
+    </>
   );
 }
 
