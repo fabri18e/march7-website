@@ -20,16 +20,26 @@ export async function POST(req: NextRequest) {
     const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, { limit: 100 });
     const cart: { id: string; qty: number }[] = JSON.parse(session.metadata?.cart || '[]');
 
-    const orderItems = lineItems.data.map((item, i) => ({
-      product_id: cart[i]?.id ?? null,
-      name: item.description ?? '',
-      quantity: item.quantity ?? 1,
-      unit_price: ((item.amount_total ?? 0) / (item.quantity ?? 1)) / 100,
-      total: (item.amount_total ?? 0) / 100,
-    }));
+    const orderItems = lineItems.data.map((item, i) => {
+      const itemTotal = item.amount_total ?? item.amount_subtotal ?? 0;
+      const qty = item.quantity ?? 1;
+      return {
+        product_id: cart[i]?.id ?? null,
+        name: item.description ?? '',
+        quantity: qty,
+        unit_price: itemTotal / qty / 100,
+        total: itemTotal / 100,
+      };
+    });
 
-    const totalAmount = session.amount_total
-      ?? lineItems.data.reduce((sum, item) => sum + (item.amount_total ?? 0), 0);
+    // amount_total can be null with automatic_tax or promotions — fall back to PaymentIntent
+    let totalAmount = session.amount_total
+      ?? lineItems.data.reduce((sum, item) => sum + (item.amount_total ?? item.amount_subtotal ?? 0), 0);
+
+    if (!totalAmount && session.payment_intent && typeof session.payment_intent === 'string') {
+      const pi = await stripe.paymentIntents.retrieve(session.payment_intent);
+      totalAmount = pi.amount;
+    }
 
     const rawAddr = session.collected_information?.shipping_details;
     const shippingAddress = rawAddr ? { name: rawAddr.name ?? null, ...rawAddr.address } : null;
