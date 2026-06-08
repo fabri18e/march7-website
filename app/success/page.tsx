@@ -32,14 +32,23 @@ function SuccessContent() {
         .then(res => res.json())
         .then(data => {
           if (data.error) setSaveError(data.error);
-          else tiktokPurchase(
-            data.totalAmount ? data.totalAmount / 100 : 0,
-            (data.orderItems || []).map((i: { product_id: string | null; name: string; quantity: number }) => ({
+          else {
+            const amount = data.totalAmount ? data.totalAmount / 100 : 0;
+            const items = (data.orderItems || []).map((i: { product_id: string | null; name: string; quantity: number }) => ({
               id: i.product_id ?? '',
               name: i.name,
               quantity: i.quantity,
-            }))
-          );
+            }));
+            tiktokPurchase(amount, items);
+            if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+              (window as any).gtag('event', 'purchase', {
+                transaction_id: sessionId,
+                value: amount,
+                currency: 'USD',
+                items: items.map(i => ({ item_id: i.id, item_name: i.name, quantity: i.quantity })),
+              });
+            }
+          }
         })
         .catch(err => setSaveError(err.message));
     }
