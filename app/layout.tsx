@@ -17,7 +17,7 @@ const inter = Inter({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://march7.store';
+const siteUrl = process.env.NEXT_PUBLIC_URL || 'https://www.march7.net';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

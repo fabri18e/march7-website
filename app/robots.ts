@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://march7.store';
+const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://www.march7.net';
 
 export default function robots(): MetadataRoute.Robots {
   return {

@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://march7.store';
+const SITE_URL = process.env.NEXT_PUBLIC_URL || 'https://www.march7.net';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
