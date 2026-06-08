@@ -32,7 +32,14 @@ function SuccessContent() {
         .then(res => res.json())
         .then(data => {
           if (data.error) setSaveError(data.error);
-          else tiktokPurchase(data.totalAmount ? data.totalAmount / 100 : 0);
+          else tiktokPurchase(
+            data.totalAmount ? data.totalAmount / 100 : 0,
+            (data.orderItems || []).map((i: { product_id: string | null; name: string; quantity: number }) => ({
+              id: i.product_id ?? '',
+              name: i.name,
+              quantity: i.quantity,
+            }))
+          );
         })
         .catch(err => setSaveError(err.message));
     }

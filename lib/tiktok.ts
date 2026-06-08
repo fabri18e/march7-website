@@ -41,9 +41,9 @@ export function tiktokInitiateCheckout(value: number, items: { id: string; name:
   });
 }
 
-export function tiktokPurchase(value: number) {
+export function tiktokPurchase(value: number, items: { id: string; name: string; quantity: number }[] = []) {
   ttq()?.track('Purchase', {
-    contents: [],
+    contents: items.map(i => ({ content_id: i.id, content_type: 'product', content_name: i.name, num_items: i.quantity })),
     value,
     currency: 'USD',
   });
