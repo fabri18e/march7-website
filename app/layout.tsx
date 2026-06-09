@@ -56,7 +56,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
-      <head>
+      <head />
+      <body>
         {/* Google Analytics */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-5J79VCN4Z0" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">{`
@@ -81,8 +82,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
           })(window, document, "clarity", "script", "x31doa5ubs");
         `}</Script>
-      </head>
-      <body>
         <NextTopLoader color="#6366f1" height={3} showSpinner={false} />
         <AuthProvider>
         <CartProvider>
