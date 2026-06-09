@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import type { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import ReviewSection from '@/components/ReviewSection';
 import AIAnalysis from '@/components/AIAnalysis';
 import StarRating from '@/components/StarRating';
@@ -40,6 +42,8 @@ type Tab = 'description' | 'specs' | 'ai';
 
 function ProductDetailInner({ product, allProducts }: { product: Product; allProducts: Product[] }) {
   const { addItem, openCart } = useCart();
+  const { user } = useAuth();
+  const [buyLoading, setBuyLoading] = useState(false);
   const countdown = useCountdown(product.id);
 
   const [activeTab, setActiveTab] = useState<Tab>('description');
@@ -124,10 +128,25 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
     tiktokAddToCart(product.id, cartName, effectivePrice);
   };
 
-  const handleBuyNow = () => {
-    addItem({ id: cartId, name: cartName, price: effectivePrice, image: cartImage });
+  const handleBuyNow = async () => {
     tiktokAddToCart(product.id, cartName, effectivePrice);
-    openCart();
+    setBuyLoading(true);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: [{ id: cartId, qty: 1, image: cartImage }],
+          userId: user?.id || '',
+          userEmail: user?.email || '',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Checkout failed');
+      window.location.href = data.url;
+    } catch {
+      setBuyLoading(false);
+    }
   };
 
   const tabs: { key: Tab; label: string }[] = [
@@ -426,9 +445,10 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
             <button
               onClick={handleBuyNow}
-              className="flex-1 bg-accent hover:bg-accent-hover text-white font-semibold py-3.5 px-6 rounded-xl transition-colors"
+              disabled={buyLoading}
+              className="flex-1 bg-accent hover:bg-accent-hover text-white font-semibold py-3.5 px-6 rounded-xl transition-colors disabled:opacity-70"
             >
-              ⚡ Buy Now
+              {buyLoading ? 'Redirecting...' : '⚡ Buy Now'}
             </button>
             <button
               onClick={handleAddToCart}
@@ -755,9 +775,10 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
         </button>
         <button
           onClick={handleBuyNow}
-          className="bg-accent hover:bg-accent-hover text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm whitespace-nowrap"
+          disabled={buyLoading}
+          className="bg-accent hover:bg-accent-hover text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm whitespace-nowrap disabled:opacity-70"
         >
-          ⚡ Buy Now
+          {buyLoading ? '...' : '⚡ Buy Now'}
         </button>
       </div>
     </>
