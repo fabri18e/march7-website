@@ -8,6 +8,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import CartDrawer from '@/components/CartDrawer';
 import CookieBanner from '@/components/CookieBanner';
+import GoogleAnalyticsTracker from '@/components/GoogleAnalyticsTracker';
 import NextTopLoader from 'nextjs-toploader';
 
 const inter = Inter({
@@ -89,6 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main className="flex-1">{children}</main>
             <CartDrawer />
             <CookieBanner />
+            <GoogleAnalyticsTracker />
             <footer className="bg-gray-950 text-gray-400 mt-16 sm:mt-24">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10">
