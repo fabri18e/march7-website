@@ -30,23 +30,6 @@ function useCountdown(productId: string) {
   return t;
 }
 
-function useViewers(productId: string) {
-  const base = productId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  const initial = 8 + (base % 17);
-  const [count, setCount] = useState(initial);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCount(prev => {
-        const change = Math.random() < 0.5 ? 1 : -1;
-        return Math.min(32, Math.max(5, prev + change));
-      });
-    }, Math.floor(Math.random() * 8000) + 7000); // every 7–15 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  return count;
-}
 
 function avgRating(reviews: Product['reviews']) {
   if (!reviews.length) return 0;
@@ -58,7 +41,7 @@ type Tab = 'description' | 'specs' | 'ai';
 function ProductDetailInner({ product, allProducts }: { product: Product; allProducts: Product[] }) {
   const { addItem, openCart } = useCart();
   const countdown = useCountdown(product.id);
-  const viewers = useViewers(product.id);
+
   const [activeTab, setActiveTab] = useState<Tab>('description');
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
@@ -263,10 +246,6 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
             </div>
           )}
 
-          <p className="text-xs text-gray-500 flex items-center gap-1.5 -mt-1">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
-            {viewers} people viewing this right now
-          </p>
 
           <div className="flex items-end gap-3">
             <span className="text-4xl font-bold text-gray-900">${effectivePrice.toFixed(2)}</span>
