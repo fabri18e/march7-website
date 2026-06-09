@@ -112,6 +112,14 @@ export async function POST(req: NextRequest) {
       shipping_address_collection: {
         allowed_countries: ['US'],
       },
+      consent_collection: {
+        terms_of_service: 'required',
+      },
+      custom_text: {
+        terms_of_service_acceptance: {
+          message: `I agree to the [Terms of Service](${SITE_URL}/legal/terms) and [Privacy Policy](${SITE_URL}/legal/privacy).`,
+        },
+      },
     });
 
     return NextResponse.json({ url: session.url });
