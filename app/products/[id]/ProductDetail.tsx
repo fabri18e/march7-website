@@ -44,6 +44,7 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
   const { addItem, openCart } = useCart();
   const { user } = useAuth();
   const [buyLoading, setBuyLoading] = useState(false);
+  const [paypalLoading, setPaypalLoading] = useState(false);
   const countdown = useCountdown(product.id);
 
   const [activeTab, setActiveTab] = useState<Tab>('description');
@@ -126,6 +127,26 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
   const handleAddToCart = () => {
     addItem({ id: cartId, name: cartName, price: effectivePrice, image: cartImage });
     tiktokAddToCart(product.id, cartName, effectivePrice);
+  };
+
+  const handlePayPal = async () => {
+    setPaypalLoading(true);
+    try {
+      const res = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: [{ id: cartId, qty: 1, image: cartImage }],
+          userId: user?.id || '',
+          userEmail: user?.email || '',
+        }),
+      });
+      const data = await res.json();
+      if (data.approveUrl) window.location.href = data.approveUrl;
+      else throw new Error(data.error || 'PayPal error');
+    } catch {
+      setPaypalLoading(false);
+    }
   };
 
   const handleBuyNow = async () => {
@@ -457,6 +478,15 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
               🛒 Add to Cart
             </button>
           </div>
+          {process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID && (
+            <button
+              onClick={handlePayPal}
+              disabled={paypalLoading}
+              className="w-full bg-[#FFC439] hover:bg-[#f0b429] disabled:opacity-50 text-[#003087] font-bold py-3.5 px-6 rounded-xl transition-colors"
+            >
+              {paypalLoading ? '...' : <span>Pay<span className="font-light">Pal</span></span>}
+            </button>
+          )}
 
           <div className="grid grid-cols-2 gap-2 mt-1 text-xs text-gray-500">
             {[
