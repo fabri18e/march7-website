@@ -7,7 +7,6 @@ import Image from 'next/image';
 import type { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
 import ReviewSection from '@/components/ReviewSection';
 import AIAnalysis from '@/components/AIAnalysis';
 import StarRating from '@/components/StarRating';
@@ -98,6 +97,12 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
   const handleAddToCart = () => {
     addItem({ id: cartId, name: cartName, price: effectivePrice, image: cartImage });
     tiktokAddToCart(product.id, cartName, effectivePrice);
+    if (typeof window !== 'undefined' && typeof (window as { gtag?: (...a: unknown[]) => void }).gtag === 'function') {
+      (window as { gtag: (...a: unknown[]) => void }).gtag('event', 'add_to_cart', {
+        currency: 'USD', value: effectivePrice,
+        items: [{ item_id: product.id, item_name: cartName, price: effectivePrice, quantity: 1 }],
+      });
+    }
   };
 
   const handlePayPal = async () => {
@@ -122,6 +127,12 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
 
   const handleBuyNow = async () => {
     tiktokAddToCart(product.id, cartName, effectivePrice);
+    if (typeof window !== 'undefined' && typeof (window as { gtag?: (...a: unknown[]) => void }).gtag === 'function') {
+      (window as { gtag: (...a: unknown[]) => void }).gtag('event', 'begin_checkout', {
+        currency: 'USD', value: effectivePrice,
+        items: [{ item_id: product.id, item_name: cartName, price: effectivePrice, quantity: 1 }],
+      });
+    }
     setBuyLoading(true);
     try {
       const res = await fetch('/api/checkout', {

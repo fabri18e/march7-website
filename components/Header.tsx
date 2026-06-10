@@ -53,6 +53,7 @@ export default function Header() {
             onClick={() => setDrawerOpen(true)}
             className="flex items-center gap-2 px-3 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-xl transition-colors flex-shrink-0"
             aria-label="Open menu"
+            aria-expanded={drawerOpen}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeWidth="2.5" strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16"/>

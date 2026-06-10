@@ -138,9 +138,14 @@ export async function POST(req: NextRequest) {
       status: settled[i].status === 'fulfilled' ? 'ok' : String((settled[i] as PromiseRejectedResult).reason),
     })).filter(r => !r.id.startsWith('delete:'));
 
-    const ok = results.filter(r => r.status === 'ok').length;
+    const ok = results.filter(r => r.status === 'ok');
     const failed = results.filter(r => r.status !== 'ok');
-    return NextResponse.json({ synced: ok, failed: failed.length, details: failed });
+    return NextResponse.json({
+      synced: ok.length,
+      failed: failed.length,
+      details: failed,
+      sent: ok.map(r => r.id),
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[sync-merchant]', msg);

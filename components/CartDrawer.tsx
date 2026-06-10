@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { tiktokInitiateCheckout, tiktokAddToCart } from '@/lib/tiktok';
@@ -112,10 +113,9 @@ export default function CartDrawer() {
             <div className="space-y-4">
               {items.map(item => (
                 <div key={item.id} className="flex gap-3 pb-4 border-b border-gray-50 last:border-0">
-                  <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="relative w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {item.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl"/>
+                      <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover rounded-xl"/>
                     ) : (
                       <span className="text-2xl">📦</span>
                     )}
@@ -152,10 +152,9 @@ export default function CartDrawer() {
                   <div className="space-y-3">
                     {suggestions.map(s => (
                       <div key={s.id} className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex-shrink-0 overflow-hidden">
+                        <div className="relative w-12 h-12 bg-gray-50 rounded-xl flex-shrink-0 overflow-hidden">
                           {s.image
-                            // eslint-disable-next-line @next/next/no-img-element
-                            ? <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
+                            ? <Image src={s.image} alt={s.name} fill sizes="48px" className="object-cover" />
                             : <span className="flex items-center justify-center w-full h-full text-gray-300 text-xl">📦</span>
                           }
                         </div>
@@ -164,7 +163,16 @@ export default function CartDrawer() {
                           <p className="text-xs text-gray-500">${s.price.toFixed(2)}</p>
                         </div>
                         <button
-                          onClick={() => { addItem({ id: s.id, name: s.name, price: s.price, image: s.image }); tiktokAddToCart(s.id, s.name, s.price); }}
+                          onClick={() => {
+  addItem({ id: s.id, name: s.name, price: s.price, image: s.image });
+  tiktokAddToCart(s.id, s.name, s.price);
+  if (typeof window !== 'undefined' && typeof (window as { gtag?: (...a: unknown[]) => void }).gtag === 'function') {
+    (window as { gtag: (...a: unknown[]) => void }).gtag('event', 'add_to_cart', {
+      currency: 'USD', value: s.price,
+      items: [{ item_id: s.id, item_name: s.name, price: s.price, quantity: 1 }],
+    });
+  }
+}}
                           className="text-xs font-semibold text-accent border border-accent px-2.5 py-1 rounded-lg hover:bg-accent-light transition-colors flex-shrink-0"
                         >
                           + Add

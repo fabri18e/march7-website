@@ -47,6 +47,11 @@ function SuccessContent() {
                 currency: 'USD',
                 items: items.map((i: { id: string; name: string; quantity: number }) => ({ item_id: i.id, item_name: i.name, quantity: i.quantity })),
               });
+              (window as any).gtag('event', 'conversion_event_purchase', {
+                transaction_id: sessionId,
+                value: amount,
+                currency: 'USD',
+              });
             }
           }
         })

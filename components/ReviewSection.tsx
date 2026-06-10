@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import type { StaticReview } from '@/types';
 import StarRating from './StarRating';
 import { useAuth } from '@/context/AuthContext';
@@ -438,10 +439,9 @@ export default function ReviewSection({ productId, staticReviews, autoOpenForm }
                       key={idx}
                       type="button"
                       onClick={() => setLightboxUrl(url)}
-                      className="w-20 h-20 rounded-xl overflow-hidden border border-gray-100 hover:opacity-90 transition-opacity flex-shrink-0"
+                      className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-100 hover:opacity-90 transition-opacity flex-shrink-0"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt={`Review photo ${idx + 1}`} className="w-full h-full object-cover" />
+                      <Image src={url} alt={`Review photo ${idx + 1}`} fill sizes="80px" className="object-cover" />
                     </button>
                   ))}
                 </div>
