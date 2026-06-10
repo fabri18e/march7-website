@@ -21,7 +21,7 @@ function avgRating(reviews: Product['reviews']) {
 
 type Tab = 'description' | 'specs' | 'ai';
 
-function ProductDetailInner({ product, allProducts }: { product: Product; allProducts: Product[] }) {
+function ProductDetailInner({ product, allProducts, autoOpenReview }: { product: Product; allProducts: Product[]; autoOpenReview?: boolean }) {
   const { addItem, openCart } = useCart();
   const { user } = useAuth();
   const [buyLoading, setBuyLoading] = useState(false);
@@ -32,20 +32,10 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [bundleVariants, setBundleVariants] = useState<Record<string, number | null>>({});
-  const searchParams = useSearchParams();
-
   useEffect(() => {
     tiktokViewContent(product.id, product.name, product.price);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);
-
-  useEffect(() => {
-    if (searchParams.get('review') === 'true') {
-      setTimeout(() => {
-        document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 500);
-    }
-  }, [searchParams]);
 
   // Reset to first image when variant changes
   useEffect(() => { setSelectedImage(0); }, [selectedVariant]);
@@ -720,7 +710,7 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
         <ReviewSection
           productId={product.id}
           staticReviews={product.reviews}
-          autoOpenForm={searchParams.get('review') === 'true'}
+          autoOpenForm={autoOpenReview}
         />
       </section>
 
@@ -786,10 +776,25 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
   );
 }
 
+function ReviewAutoScroll({ productId, product, allProducts }: { productId: string; product: Product; allProducts: Product[] }) {
+  const searchParams = useSearchParams();
+  const autoOpen = searchParams.get('review') === 'true';
+
+  useEffect(() => {
+    if (autoOpen) {
+      setTimeout(() => {
+        document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 500);
+    }
+  }, [autoOpen]);
+
+  return <ProductDetailInner product={product} allProducts={allProducts} autoOpenReview={autoOpen} />;
+}
+
 export default function ProductDetail({ product, allProducts }: { product: Product; allProducts: Product[] }) {
   return (
-    <Suspense fallback={null}>
-      <ProductDetailInner product={product} allProducts={allProducts} />
+    <Suspense fallback={<ProductDetailInner product={product} allProducts={allProducts} />}>
+      <ReviewAutoScroll productId={product.id} product={product} allProducts={allProducts} />
     </Suspense>
   );
 }
