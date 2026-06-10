@@ -5,11 +5,8 @@ import Image from 'next/image';
 import type { StaticReview } from '@/types';
 import StarRating from './StarRating';
 import { useAuth } from '@/context/AuthContext';
+import { avgRating } from '@/lib/utils';
 
-function avgRating(reviews: { rating: number }[]) {
-  if (!reviews.length) return 0;
-  return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
-}
 
 interface DBReview {
   id: string;

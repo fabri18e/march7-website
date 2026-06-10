@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
           product_data: {
             name,
             ...(displayImage ? { images: [displayImage] } : {}),
-          },
+          }, 
           unit_amount: Math.round(price * 100),
         },
         quantity: item.qty,

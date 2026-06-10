@@ -1,6 +1,8 @@
+import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Product } from '@/types';
+import { avgRating } from '@/lib/utils';
 
 function starsHTML(rating: number) {
   const full = Math.floor(rating);
@@ -9,18 +11,13 @@ function starsHTML(rating: number) {
   return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(empty);
 }
 
-function avgRating(reviews: Product['reviews']) {
-  if (!reviews.length) return 0;
-  return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
-}
-
 const BADGE_STYLES: Record<string, string> = {
   'Best Seller': 'bg-amber-100 text-amber-700',
   'Sale': 'bg-red-100 text-red-600',
   'New': 'bg-green-100 text-green-700',
 };
 
-export default function ProductCard({ product, allProducts, priority }: { product: Product; allProducts?: Product[]; priority?: boolean }) {
+const ProductCard = memo(function ProductCard({ product, allProducts, priority }: { product: Product; allProducts?: Product[]; priority?: boolean }) {
   const avg = avgRating(product.reviews);
 
   // For bundles: compute original total and discounted price from live item prices
@@ -104,4 +101,6 @@ export default function ProductCard({ product, allProducts, priority }: { produc
       </div>
     </Link>
   );
-}
+});
+
+export default ProductCard;

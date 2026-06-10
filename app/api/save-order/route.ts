@@ -72,23 +72,21 @@ export async function POST(req: NextRequest) {
 
     // Send emails only on first insert
     const customerEmail = session.customer_details?.email || session.metadata?.email;
-    if (true) {
-      if (customerEmail) {
-        sendOrderConfirmation({
-          to: customerEmail,
-          orderId: session.id,
-          items: orderItems,
-          totalAmount,
-        }).catch(err => console.error('[email:confirmation]', err));
-      }
-      sendAdminOrderAlert({
+    if (customerEmail) {
+      sendOrderConfirmation({
+        to: customerEmail,
         orderId: session.id,
-        email: customerEmail || '',
         items: orderItems,
         totalAmount,
-        shippingAddress: session.collected_information?.shipping_details?.address as unknown as Record<string, string | null> ?? null,
-      }).catch(err => console.error('[email:admin-alert]', err));
+      }).catch(err => console.error('[email:confirmation]', err));
     }
+    sendAdminOrderAlert({
+      orderId: session.id,
+      email: customerEmail || '',
+      items: orderItems,
+      totalAmount,
+      shippingAddress: session.collected_information?.shipping_details?.address as unknown as Record<string, string | null> ?? null,
+    }).catch(err => console.error('[email:admin-alert]', err));
 
     return NextResponse.json({ ok: true, totalAmount, orderItems });
   } catch (err) {

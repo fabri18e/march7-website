@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -15,18 +15,26 @@ export default function CartDrawer() {
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [error, setError] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const productsCache = useRef<Suggestion[] | null>(null);
 
   useEffect(() => {
     if (!isOpen || items.length === 0) return;
+    const buildSuggestions = (products: Suggestion[]) => {
+      const cartIds = new Set(items.map(i => i.id.split('--')[0]));
+      const filtered = products.filter(p => !cartIds.has(p.id));
+      const seed = items.reduce((a, i) => a + i.id.charCodeAt(0), 0);
+      const shuffled = [...filtered].sort((a, b) => (a.id.charCodeAt(0) + seed) % 7 - (b.id.charCodeAt(0) + seed) % 7);
+      setSuggestions(shuffled.slice(0, 2));
+    };
+    if (productsCache.current) {
+      buildSuggestions(productsCache.current);
+      return;
+    }
     fetch('/api/products')
       .then(r => r.json())
       .then(({ products }) => {
-        const cartIds = new Set(items.map(i => i.id.split('--')[0]));
-        const filtered = (products as Suggestion[]).filter(p => !cartIds.has(p.id));
-        // Shuffle deterministically based on cart content
-        const seed = items.reduce((a, i) => a + i.id.charCodeAt(0), 0);
-        const shuffled = [...filtered].sort((a, b) => (a.id.charCodeAt(0) + seed) % 7 - (b.id.charCodeAt(0) + seed) % 7);
-        setSuggestions(shuffled.slice(0, 2));
+        productsCache.current = products as Suggestion[];
+        buildSuggestions(products as Suggestion[]);
       })
       .catch(() => {});
   }, [isOpen, items]);

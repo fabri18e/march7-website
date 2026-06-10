@@ -11,12 +11,7 @@ import ReviewSection from '@/components/ReviewSection';
 import AIAnalysis from '@/components/AIAnalysis';
 import StarRating from '@/components/StarRating';
 import { tiktokViewContent, tiktokAddToCart } from '@/lib/tiktok';
-
-
-function avgRating(reviews: Product['reviews']) {
-  if (!reviews.length) return 0;
-  return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
-}
+import { avgRating } from '@/lib/utils';
 
 type Tab = 'description' | 'specs' | 'ai';
 
