@@ -26,6 +26,7 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
   const { user } = useAuth();
   const [buyLoading, setBuyLoading] = useState(false);
   const [paypalLoading, setPaypalLoading] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const [activeTab, setActiveTab] = useState<Tab>('description');
   const [selectedImage, setSelectedImage] = useState(0);
@@ -37,8 +38,8 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);
 
-  // Reset to first image when variant changes
-  useEffect(() => { setSelectedImage(0); }, [selectedVariant]);
+  useEffect(() => { setSelectedImage(0); setImgError(false); }, [selectedVariant]);
+  useEffect(() => { setImgError(false); }, [selectedImage]);
 
   const variants = product.variants?.filter(v => v.color) ?? [];
   const activeVariant = selectedVariant !== null ? variants[selectedVariant] : null;
@@ -189,8 +190,8 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
 
           <div className="flex-1 min-w-0">
             <div className="relative aspect-square bg-gray-50 rounded-3xl border border-gray-100 overflow-hidden">
-              {currentImage ? (
-                <Image src={currentImage} alt={product.name} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition-transform duration-300 hover:scale-105" priority />
+              {currentImage && !imgError ? (
+                <Image src={currentImage} alt={product.name} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition-transform duration-300 hover:scale-105" priority onError={() => setImgError(true)} />
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-300">
                   <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
