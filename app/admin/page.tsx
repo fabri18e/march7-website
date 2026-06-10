@@ -233,6 +233,8 @@ function ProductForm({ initial, onSave, onCancel }: {
   const [rawPros, setRawPros]         = useState((initial?.pros || []).join('\n'));
   const [rawCons, setRawCons]         = useState((initial?.cons || []).join('\n'));
   const [rawImages, setRawImages]     = useState((initial?.images || []).join('\n'));
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [reviewRows, setReviewRows]   = useState<{ name: string; rating: string; date: string; text: string; source: string; images: string[]; uploading: boolean }[]>(
     (initial?.reviews || []).map(r => ({ name: r.name, rating: String(r.rating), date: r.date, text: r.text, source: r.source || '', images: (r as { images?: string[] }).images || [], uploading: false }))
   );
@@ -343,17 +345,61 @@ function ProductForm({ initial, onSave, onCancel }: {
         </div>
 
         <div className="sm:col-span-2">
-          <label className="text-xs font-semibold text-gray-500 mb-1 block">Main Image URL (thumbnail)</label>
-          <input className={inp} value={form.image || ''} onChange={e => set('image', e.target.value || null)} placeholder="https://..." />
+          <label className="text-xs font-semibold text-gray-500 mb-1 block">Main Image</label>
+          <div className="flex gap-2 items-start">
+            <input className={`${inp} flex-1`} value={form.image || ''} onChange={e => set('image', e.target.value || null)} placeholder="URL or upload →" />
+            <label className={`flex-shrink-0 cursor-pointer text-xs font-semibold px-3 py-2 rounded-xl border-2 border-dashed transition-colors ${uploadingMain ? 'border-gray-200 text-gray-300' : 'border-accent text-accent hover:bg-accent/5'}`}>
+              {uploadingMain ? 'Uploading...' : '↑ Upload'}
+              <input type="file" accept="image/*" className="hidden" disabled={uploadingMain} onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setUploadingMain(true);
+                const fd = new FormData();
+                fd.append('file', file);
+                try {
+                  const res = await fetch('/api/upload-product-image', { method: 'POST', body: fd });
+                  const data = await res.json();
+                  if (res.ok) set('image', data.url);
+                  else alert(data.error || 'Upload failed');
+                } catch { alert('Upload failed'); }
+                setUploadingMain(false);
+                e.target.value = '';
+              }} />
+            </label>
+          </div>
+          {form.image && <img src={form.image} alt="" className="mt-2 h-20 w-20 object-cover rounded-xl border border-gray-200" />}
         </div>
 
         <div className="sm:col-span-2">
-          <label className="text-xs font-semibold text-gray-500 mb-1 block">Gallery Images (one URL per line)</label>
-          <textarea className={`${inp} min-h-[60px] resize-y`}
-            value={rawImages}
-            onChange={e => setRawImages(e.target.value)}
-            placeholder={"https://cdn.example.com/img1.jpg\nhttps://cdn.example.com/img2.jpg"} />
-          <p className="text-xs text-gray-400 mt-1">These replace the main image in the product gallery. Add all angles here.</p>
+          <label className="text-xs font-semibold text-gray-500 mb-1 block">Gallery Images</label>
+          <div className="flex gap-2 items-start">
+            <textarea className={`${inp} min-h-[60px] resize-y flex-1`}
+              value={rawImages}
+              onChange={e => setRawImages(e.target.value)}
+              placeholder={"One URL per line"} />
+            <label className={`flex-shrink-0 cursor-pointer text-xs font-semibold px-3 py-2 rounded-xl border-2 border-dashed transition-colors ${uploadingGallery ? 'border-gray-200 text-gray-300' : 'border-accent text-accent hover:bg-accent/5'}`}>
+              {uploadingGallery ? 'Uploading...' : '↑ Add'}
+              <input type="file" accept="image/*" multiple className="hidden" disabled={uploadingGallery} onChange={async (e) => {
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+                setUploadingGallery(true);
+                const urls: string[] = [];
+                for (const file of files) {
+                  const fd = new FormData();
+                  fd.append('file', file);
+                  try {
+                    const res = await fetch('/api/upload-product-image', { method: 'POST', body: fd });
+                    const data = await res.json();
+                    if (res.ok) urls.push(data.url);
+                  } catch { /* skip failed */ }
+                }
+                setRawImages(prev => [...prev.split('\n').filter(Boolean), ...urls].join('\n'));
+                setUploadingGallery(false);
+                e.target.value = '';
+              }} />
+            </label>
+          </div>
+          <p className="text-xs text-gray-400 mt-1">Upload multiple images or paste URLs. These show in the product gallery.</p>
         </div>
 
         <div className="sm:col-span-2">
@@ -1103,6 +1149,8 @@ function ProductsTab() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string>('');
+  const [syncIds, setSyncIds] = useState<string[]>([]);
+  const [showSyncIds, setShowSyncIds] = useState(false);
 
   useEffect(() => {
     fetch('/api/admin/products')
@@ -1194,6 +1242,8 @@ function ProductsTab() {
                 else {
                   const failMsg = data.details?.length ? ` — Error: ${data.details[0]?.status}` : '';
                   setSyncResult(`✓ Synced ${data.synced} to Google Merchant${data.failed ? ` (${data.failed} failed${failMsg})` : ''}`);
+                  setSyncIds(data.sent || []);
+                  setShowSyncIds(false);
                 }
               } catch (e) {
                 setSyncResult(`Error: ${e}`);
@@ -1221,9 +1271,24 @@ function ProductsTab() {
         </div>
       </div>
       {syncResult && (
-        <p className={`text-xs px-3 py-2 rounded-lg ${syncResult.startsWith('Error') ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
-          {syncResult}
-        </p>
+        <div className={`text-xs px-3 py-2 rounded-lg ${syncResult.startsWith('Error') ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
+          <div className="flex items-center justify-between gap-2">
+            <span>{syncResult}</span>
+            {syncIds.length > 0 && (
+              <button onClick={() => setShowSyncIds(v => !v)} className="underline opacity-70 hover:opacity-100 whitespace-nowrap">
+                {showSyncIds ? 'Hide IDs' : 'Ver IDs enviados'}
+              </button>
+            )}
+          </div>
+          {showSyncIds && (
+            <div className="mt-2 space-y-0.5 max-h-40 overflow-y-auto">
+              <p className="font-semibold mb-1 opacity-80">Estos son los Item IDs enviados a Google Merchant — compáralos con los que tienes en Merchant Center → Productos:</p>
+              {syncIds.map(id => (
+                <p key={id} className="font-mono opacity-90">{id}</p>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {products.length === 0 ? (
