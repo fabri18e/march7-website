@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
 
   // Resize to max 1200px and convert to WebP at 85% quality
   const compressed = await sharp(buffer)
-    .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: 85 })
+    .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 92 })
     .toBuffer();
 
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
