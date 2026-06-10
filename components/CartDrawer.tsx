@@ -166,8 +166,8 @@ export default function CartDrawer() {
                           onClick={() => {
   addItem({ id: s.id, name: s.name, price: s.price, image: s.image });
   tiktokAddToCart(s.id, s.name, s.price);
-  if (typeof window !== 'undefined' && typeof (window as { gtag?: (...a: unknown[]) => void }).gtag === 'function') {
-    (window as { gtag: (...a: unknown[]) => void }).gtag('event', 'add_to_cart', {
+  if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+    (window as any).gtag('event', 'add_to_cart', {
       currency: 'USD', value: s.price,
       items: [{ item_id: s.id, item_name: s.name, price: s.price, quantity: 1 }],
     });

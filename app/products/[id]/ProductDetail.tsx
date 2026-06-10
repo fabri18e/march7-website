@@ -97,8 +97,8 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
   const handleAddToCart = () => {
     addItem({ id: cartId, name: cartName, price: effectivePrice, image: cartImage });
     tiktokAddToCart(product.id, cartName, effectivePrice);
-    if (typeof window !== 'undefined' && typeof (window as { gtag?: (...a: unknown[]) => void }).gtag === 'function') {
-      (window as { gtag: (...a: unknown[]) => void }).gtag('event', 'add_to_cart', {
+    if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', 'add_to_cart', {
         currency: 'USD', value: effectivePrice,
         items: [{ item_id: product.id, item_name: cartName, price: effectivePrice, quantity: 1 }],
       });
@@ -127,8 +127,8 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
 
   const handleBuyNow = async () => {
     tiktokAddToCart(product.id, cartName, effectivePrice);
-    if (typeof window !== 'undefined' && typeof (window as { gtag?: (...a: unknown[]) => void }).gtag === 'function') {
-      (window as { gtag: (...a: unknown[]) => void }).gtag('event', 'begin_checkout', {
+    if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', 'begin_checkout', {
         currency: 'USD', value: effectivePrice,
         items: [{ item_id: product.id, item_name: cartName, price: effectivePrice, quantity: 1 }],
       });
