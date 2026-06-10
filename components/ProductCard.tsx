@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Product } from '@/types';
 
 function starsHTML(rating: number) {
@@ -43,8 +44,7 @@ export default function ProductCard({ product, allProducts }: { product: Product
     >
       <div className="relative aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
         {product.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+          <Image src={product.image} alt={product.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover transition-transform duration-300 group-hover:scale-110" />
         ) : (
           <div className="flex flex-col items-center gap-2 text-gray-300 transition-transform duration-300 group-hover:scale-105">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
