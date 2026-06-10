@@ -12,26 +12,6 @@ import AIAnalysis from '@/components/AIAnalysis';
 import StarRating from '@/components/StarRating';
 import { tiktokViewContent, tiktokAddToCart } from '@/lib/tiktok';
 
-function useCountdown(productId: string) {
-  const [t, setT] = useState({ h: 23, m: 59, s: 59 });
-  useEffect(() => {
-    const key = `m7_cd_${productId}`;
-    let deadline = parseInt(localStorage.getItem(key) || '0');
-    if (!deadline || deadline < Date.now()) {
-      deadline = Date.now() + 24 * 60 * 60 * 1000;
-      localStorage.setItem(key, String(deadline));
-    }
-    const tick = () => {
-      const diff = Math.max(0, deadline - Date.now());
-      setT({ h: Math.floor(diff / 3600000), m: Math.floor((diff % 3600000) / 60000), s: Math.floor((diff % 60000) / 1000) });
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [productId]);
-  return t;
-}
-
 
 function avgRating(reviews: Product['reviews']) {
   if (!reviews.length) return 0;
@@ -45,7 +25,6 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
   const { user } = useAuth();
   const [buyLoading, setBuyLoading] = useState(false);
   const [paypalLoading, setPaypalLoading] = useState(false);
-  const countdown = useCountdown(product.id);
 
   const [activeTab, setActiveTab] = useState<Tab>('description');
   const [selectedImage, setSelectedImage] = useState(0);
@@ -453,23 +432,13 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
             </div>
           )}
 
-          <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3">
-            <span className="text-xl flex-shrink-0">🔥</span>
-            <div>
-              <p className="text-xs font-bold text-orange-700">Limited time offer — ends in</p>
-              <p className="font-mono text-base font-bold text-orange-600 leading-none mt-0.5">
-                {String(countdown.h).padStart(2, '0')}:{String(countdown.m).padStart(2, '0')}:{String(countdown.s).padStart(2, '0')}
-              </p>
-            </div>
-          </div>
-
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
             <button
               onClick={handleBuyNow}
               disabled={buyLoading}
               className="flex-1 bg-accent hover:bg-accent-hover text-white font-semibold py-3.5 px-6 rounded-xl transition-colors disabled:opacity-70"
             >
-              {buyLoading ? 'Redirecting...' : '⚡ Buy Now'}
+              {buyLoading ? 'Redirecting...' : 'Buy Now'}
             </button>
             <button
               onClick={handleAddToCart}
@@ -808,7 +777,7 @@ function ProductDetailInner({ product, allProducts }: { product: Product; allPro
           disabled={buyLoading}
           className="bg-accent hover:bg-accent-hover text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm whitespace-nowrap disabled:opacity-70"
         >
-          {buyLoading ? '...' : '⚡ Buy Now'}
+          {buyLoading ? '...' : 'Buy Now'}
         </button>
       </div>
     </>
