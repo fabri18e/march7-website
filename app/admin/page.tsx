@@ -239,13 +239,14 @@ function ProductForm({ initial, onSave, onCancel }: {
     (initial?.reviews || []).map(r => ({ name: r.name, rating: String(r.rating), date: r.date, text: r.text, source: r.source || '', images: (r as { images?: string[] }).images || [], uploading: false }))
   );
   const [specRows, setSpecRows]       = useState<[string, string][]>(initial?.specs || []);
-  const [variantRows, setVariantRows] = useState<{ color: string; hex: string; price: string; oldPrice: string; images: string }[]>(
+  const [variantRows, setVariantRows] = useState<{ color: string; hex: string; price: string; oldPrice: string; images: string; uploading: boolean }[]>(
     (initial?.variants || []).map(v => ({
       color: v.color,
       hex: v.hex || '',
       price: v.price != null ? String(v.price) : '',
       oldPrice: v.oldPrice != null ? String(v.oldPrice) : '',
       images: (v.images || []).join('\n'),
+      uploading: false,
     }))
   );
   const [saving, setSaving] = useState(false);
@@ -407,7 +408,7 @@ function ProductForm({ initial, onSave, onCancel }: {
             <label className="text-xs font-semibold text-gray-500">Color Variants (optional)</label>
             <button
               type="button"
-              onClick={() => setVariantRows(r => [...r, { color: '', hex: '', price: '', oldPrice: '', images: '' }])}
+              onClick={() => setVariantRows(r => [...r, { color: '', hex: '', price: '', oldPrice: '', images: '', uploading: false }])}
               className="text-xs text-accent hover:underline font-semibold"
             >
               + Add Color
@@ -486,13 +487,39 @@ function ProductForm({ initial, onSave, onCancel }: {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Images for this color (one URL per line)</label>
-                    <textarea
-                      className={`${inp} min-h-[52px] resize-y text-xs`}
-                      value={v.images}
-                      onChange={e => setVariantRows(r => r.map((row, ri) => ri === i ? { ...row, images: e.target.value } : row))}
-                      placeholder={"https://cdn.example.com/black-1.jpg\nhttps://cdn.example.com/black-2.jpg"}
-                    />
+                    <label className="text-xs text-gray-400 mb-1 block">Images for this color</label>
+                    <div className="flex gap-2 items-start">
+                      <textarea
+                        className={`${inp} min-h-[52px] resize-y text-xs flex-1`}
+                        value={v.images}
+                        onChange={e => setVariantRows(r => r.map((row, ri) => ri === i ? { ...row, images: e.target.value } : row))}
+                        placeholder="One URL per line"
+                      />
+                      <label className={`flex-shrink-0 cursor-pointer text-xs font-semibold px-3 py-2 rounded-xl border-2 border-dashed transition-colors ${v.uploading ? 'border-gray-200 text-gray-300' : 'border-accent text-accent hover:bg-accent/5'}`}>
+                        {v.uploading ? '...' : '↑ Add'}
+                        <input type="file" accept="image/*" multiple className="hidden" disabled={v.uploading} onChange={async (e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (!files.length) return;
+                          setVariantRows(r => r.map((row, ri) => ri === i ? { ...row, uploading: true } : row));
+                          const urls: string[] = [];
+                          for (const file of files) {
+                            const fd = new FormData();
+                            fd.append('file', file);
+                            try {
+                              const res = await fetch('/api/upload-product-image', { method: 'POST', body: fd });
+                              const data = await res.json();
+                              if (res.ok) urls.push(data.url);
+                            } catch { /* skip */ }
+                          }
+                          setVariantRows(r => r.map((row, ri) => ri === i ? {
+                            ...row,
+                            images: [...row.images.split('\n').filter(Boolean), ...urls].join('\n'),
+                            uploading: false,
+                          } : row));
+                          e.target.value = '';
+                        }} />
+                      </label>
+                    </div>
                   </div>
                 </div>
               ))}
