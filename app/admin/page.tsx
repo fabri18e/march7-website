@@ -760,6 +760,7 @@ function BundleForm({ products, initial, onSave, onCancel }: {
   const [discount, setDiscount]   = useState(initial?.bundle_discount ? String(initial.bundle_discount) : '');
   const [shortDesc, setShortDesc] = useState(initial?.short_desc ?? '');
   const [image, setImage]         = useState(initial?.image ?? '');
+  const [uploadingBundleImg, setUploadingBundleImg] = useState(false);
   const [rawDesc, setRawDesc]     = useState(initial?.description ?? '');
   const [rawFeatures, setRawFeatures] = useState((initial?.features ?? []).join('\n'));
   const [rawTags, setRawTags]     = useState((initial?.tags ?? []).join('\n'));
@@ -913,15 +914,33 @@ function BundleForm({ products, initial, onSave, onCancel }: {
 
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1 block">Bundle Image URL</label>
+          <label className="text-xs font-semibold text-gray-500 mb-1 block">Bundle Image</label>
           <div className="flex gap-2 items-start">
             <input
               className={`${inp} flex-1`}
               value={image}
               onChange={e => setImage(e.target.value)}
-              placeholder="https://... (leave blank to use first product's image)"
+              placeholder="URL or upload →"
             />
-            {(image || (selectedProducts[0]?.image)) && (
+            <label className={`flex-shrink-0 cursor-pointer text-xs font-semibold px-3 py-2 rounded-xl border-2 border-dashed transition-colors ${uploadingBundleImg ? 'border-gray-200 text-gray-300' : 'border-accent text-accent hover:bg-accent/5'}`}>
+              {uploadingBundleImg ? 'Uploading...' : '↑ Upload'}
+              <input type="file" accept="image/*" className="hidden" disabled={uploadingBundleImg} onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setUploadingBundleImg(true);
+                const fd = new FormData();
+                fd.append('file', file);
+                try {
+                  const res = await fetch('/api/upload-product-image', { method: 'POST', body: fd });
+                  const data = await res.json();
+                  if (res.ok) setImage(data.url);
+                  else alert(data.error || 'Upload failed');
+                } catch { alert('Upload failed'); }
+                setUploadingBundleImg(false);
+                e.target.value = '';
+              }} />
+            </label>
+            {(image || selectedProducts[0]?.image) && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={image || selectedProducts[0]?.image || ''}
