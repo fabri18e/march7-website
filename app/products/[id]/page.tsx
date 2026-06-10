@@ -47,12 +47,14 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
   const siteUrl = process.env.NEXT_PUBLIC_URL || 'https://www.march7.net';
   const image = product.images?.[0] || product.image || null;
+  // Shorten SKU to max 20 chars — Google rejects long slugs
+  const sku = product.id.replace(/-/g, '').slice(0, 20).toUpperCase();
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     description: product.shortDesc || product.description || '',
-    sku: product.id,
+    sku,
     brand: { '@type': 'Brand', name: 'March7' },
     ...(image ? { image: [image] } : {}),
     offers: {
@@ -62,10 +64,31 @@ export default async function ProductPage({ params }: { params: { id: string } }
       price: product.price.toFixed(2),
       availability: 'https://schema.org/InStock',
       seller: { '@type': 'Organization', name: 'March7' },
-      shippingDetails: product.freeShipping ? {
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'US',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 30,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/FreeReturn',
+      },
+      shippingDetails: {
         '@type': 'OfferShippingDetails',
-        shippingRate: { '@type': 'MonetaryAmount', value: '0', currency: 'USD' },
-      } : undefined,
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: product.freeShipping ? '0' : '4.99',
+          currency: 'USD',
+        },
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: 'US',
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' },
+          transitTime: { '@type': 'QuantitativeValue', minValue: 7, maxValue: 15, unitCode: 'DAY' },
+        },
+      },
     },
     ...(product.reviews?.length ? {
       aggregateRating: {
