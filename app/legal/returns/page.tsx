@@ -40,7 +40,7 @@ export default function ReturnsPage() {
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">🔄 Return Process</h2>
           <ol className="list-decimal list-inside space-y-2">
-            <li>Contact us at <a href="mailto:support@march7.net" className="text-accent hover:underline">support@march7.net</a> with your order number and the reason for the return.</li>
+            <li>Contact us at <a href="mailto:store@march7.net" className="text-accent hover:underline">store@march7.net</a> with your order number and the reason for the return.</li>
             <li>Our team will reply within 24 hours with shipping instructions.</li>
             <li>Ship the item using a trackable shipping service.</li>
             <li>Once received and inspected, we will process your refund within <strong>5–10 business days</strong>.</li>

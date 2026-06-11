@@ -18,10 +18,10 @@ export default function ContactPage() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
               <a
-                href="mailto:support@march7.net"
+                href="mailto:store@march7.net"
                 className="text-accent hover:underline font-medium"
               >
-                support@march7.net
+                store@march7.net
               </a>
               <p className="text-sm text-gray-500 mt-1">
                 We answer within 24 hours even on weekends. For faster support, please include your order number and a detailed description of your issue.
@@ -87,7 +87,7 @@ export default function ContactPage() {
         {/* CTA */}
         <div className="text-center pt-2">
           <a
-            href="mailto:support@march7.net"
+            href="mailto:store@march7.net"
             className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white font-semibold px-8 py-3.5 rounded-xl transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

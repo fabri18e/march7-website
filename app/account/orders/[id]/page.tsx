@@ -236,7 +236,7 @@ export default function OrderDetailPage() {
       {/* Support */}
       <div className="text-center text-sm text-gray-400">
         Problem with your order?{' '}
-        <a href="mailto:support@march7.net" className="text-accent hover:underline">
+        <a href="mailto:store@march7.net" className="text-accent hover:underline">
           Contact support
         </a>
         {' '}·{' '}

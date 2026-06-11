@@ -26,7 +26,7 @@ const faqs = [
   },
   {
     q: 'Can I cancel my order?',
-    a: 'If your order hasn\'t been processed yet, you can request cancellation by contacting us at support@march7.net as soon as possible. Once processed, cancellation is no longer possible — but you can use our return policy.',
+    a: 'If your order hasn\'t been processed yet, you can request cancellation by contacting us at store@march7.net as soon as possible. Once processed, cancellation is no longer possible — but you can use our return policy.',
   },
   {
     q: 'What if my product arrived damaged or incorrect?',
