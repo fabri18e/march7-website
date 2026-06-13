@@ -223,7 +223,7 @@ const EMPTY: Partial<DBProduct> = {
 
 function ProductForm({ initial, onSave, onCancel }: {
   initial?: DBProduct;
-  onSave: (p: DBProduct) => void;
+  onSave: (p: DBProduct, oldId?: string) => void;
   onCancel: () => void;
 }) {
   const [form, setForm] = useState<Partial<DBProduct>>(initial ?? EMPTY);
