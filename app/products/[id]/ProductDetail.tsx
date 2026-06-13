@@ -413,13 +413,13 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
                 const itemPrice = vi !== null ? (p.variants?.[vi]?.price ?? p.price) : p.price;
                 return (
                   <div key={p.id} className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-amber-100 flex-shrink-0">
+                    <Link href={`/products/${p.id}`} className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-amber-100 flex-shrink-0 block hover:opacity-80 transition-opacity">
                       {thumb
                         // eslint-disable-next-line @next/next/no-img-element
                         ? <img src={thumb} alt={p.name} className="w-full h-full object-cover" />
                         : <div className="w-full h-full flex items-center justify-center text-gray-300 text-xl">📦</div>
                       }
-                    </div>
+                    </Link>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
                       <p className="text-xs text-gray-400">${itemPrice.toFixed(2)} individually</p>
