@@ -22,16 +22,31 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [imgError, setImgError] = useState(false);
   const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = imageContainerRef.current;
+    if (!el) return;
+    const onMove = (e: TouchEvent) => {
+      const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
+      const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
+      if (dx > dy) e.preventDefault();
+    };
+    el.addEventListener('touchmove', onMove, { passive: false });
+    return () => el.removeEventListener('touchmove', onMove);
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diff = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) < 50) return;
-    if (diff > 0) setSelectedImage(i => Math.min(i + 1, allImages.length - 1));
-    else setSelectedImage(i => Math.max(i - 1, 0));
+    if (diff > 0) setSelectedImage(i => (i + 1) % allImages.length);
+    else setSelectedImage(i => (i - 1 + allImages.length) % allImages.length);
   };
 
   const [activeTab, setActiveTab] = useState<Tab>('description');
@@ -207,9 +222,18 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
           )}
 
           <div className="flex-1 min-w-0">
-            <div className="relative aspect-square bg-gray-50 rounded-3xl border border-gray-100 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-              {currentImage && !imgError ? (
-                <Image src={currentImage} alt={product.name} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition-transform duration-300 hover:scale-105" priority onError={() => setImgError(true)} />
+            <div ref={imageContainerRef} className="relative aspect-square bg-gray-50 rounded-3xl border border-gray-100 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+              {allImages.length > 0 && !imgError ? (
+                <div
+                  className="flex h-full transition-transform duration-300 ease-in-out"
+                  style={{ width: `${allImages.length * 100}%`, transform: `translateX(-${selectedImage * (100 / allImages.length)}%)` }}
+                >
+                  {allImages.map((img, i) => (
+                    <div key={img + i} className="relative h-full" style={{ width: `${100 / allImages.length}%` }}>
+                      <Image src={img} alt={product.name} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" priority={i === 0} onError={() => { if (i === selectedImage) setImgError(true); }} />
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-300">
                   <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
