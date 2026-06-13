@@ -54,7 +54,7 @@ function productToItems(p: Product): string {
     <g:brand>${BRAND}</g:brand>
     <g:condition>new</g:condition>
     <g:google_product_category>${escapeXml(category)}</g:google_product_category>
-    <g:item_group_id>${escapeXml(cleanId)}</g:item_group_id>
+    <g:item_group_id>${escapeXml(cleanId.slice(0, 50).replace(/-+$/, ''))}</g:item_group_id>
     <g:color>${escapeXml(v.color)}</g:color>
     ${p.freeShipping ? `<g:shipping><g:country>US</g:country><g:service>Standard</g:service><g:price>0 USD</g:price></g:shipping>` : ''}
   </item>`;

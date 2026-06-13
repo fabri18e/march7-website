@@ -60,7 +60,7 @@ function buildProduct(p: Product, variantColor?: string, variantPrice?: number, 
   if (image) product.imageLink = image;
   if (regularPrice) product.salePrice = { value: salePrice.toFixed(2), currency: 'USD' };
   if (variantColor) {
-    product.itemGroupId = cleanId;
+    product.itemGroupId = cleanId.slice(0, 50).replace(/-+$/, '');
     product.color = variantColor;
   }
   if (p.freeShipping) {
