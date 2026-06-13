@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { tiktokInitiateCheckout, tiktokAddToCart } from '@/lib/tiktok';
@@ -160,14 +161,14 @@ export default function CartDrawer() {
                   <div className="space-y-3">
                     {suggestions.map(s => (
                       <div key={s.id} className="flex items-center gap-3">
-                        <div className="relative w-12 h-12 bg-gray-50 rounded-xl flex-shrink-0 overflow-hidden">
+                        <Link href={`/products/${s.id}`} className="relative w-12 h-12 bg-gray-50 rounded-xl flex-shrink-0 overflow-hidden hover:opacity-80 transition-opacity">
                           {s.image
                             ? <Image src={s.image} alt={s.name} fill sizes="48px" className="object-cover" />
                             : <span className="flex items-center justify-center w-full h-full text-gray-300 text-xl">📦</span>
                           }
-                        </div>
+                        </Link>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">{s.name}</p>
+                          <Link href={`/products/${s.id}`} className="text-xs font-medium text-gray-900 truncate hover:text-accent transition-colors block">{s.name}</Link>
                           <p className="text-xs text-gray-500">${s.price.toFixed(2)}</p>
                         </div>
                         <button
