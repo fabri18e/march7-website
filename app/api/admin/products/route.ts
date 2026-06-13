@@ -100,6 +100,25 @@ export async function PATCH(req: NextRequest) {
   if (fields.sort_order !== undefined)     update.sort_order = fields.sort_order;
 
   const supabase = getSupabaseAdmin();
+
+  // When name changes, rename the product ID (slug) to match
+  if (fields.name !== undefined) {
+    const newId = slugify(fields.name);
+    if (newId !== id) {
+      const { data: current, error: fetchErr } = await supabase
+        .from('products').select('*').eq('id', id).single();
+      if (fetchErr || !current) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+
+      const { error: insertErr } = await supabase
+        .from('products').insert({ ...current, ...update, id: newId });
+
+      if (!insertErr) {
+        await supabase.from('products').delete().eq('id', id);
+        return NextResponse.json({ ok: true, newId });
+      }
+    }
+  }
+
   const { error } = await supabase.from('products').update(update).eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });

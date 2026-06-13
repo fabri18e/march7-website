@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -21,6 +21,18 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
   const [buyLoading, setBuyLoading] = useState(false);
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const touchStartX = useRef<number>(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) < 50) return;
+    if (diff > 0) setSelectedImage(i => Math.min(i + 1, allImages.length - 1));
+    else setSelectedImage(i => Math.max(i - 1, 0));
+  };
 
   const [activeTab, setActiveTab] = useState<Tab>('description');
   const [selectedImage, setSelectedImage] = useState(0);
@@ -195,7 +207,7 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
           )}
 
           <div className="flex-1 min-w-0">
-            <div className="relative aspect-square bg-gray-50 rounded-3xl border border-gray-100 overflow-hidden">
+            <div className="relative aspect-square bg-gray-50 rounded-3xl border border-gray-100 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
               {currentImage && !imgError ? (
                 <Image src={currentImage} alt={product.name} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition-transform duration-300 hover:scale-105" priority onError={() => setImgError(true)} />
               ) : (
@@ -573,13 +585,13 @@ function ProductDetailInner({ product, allProducts, autoOpenReview }: { product:
                             {pi > 0 && <span className="text-2xl font-light text-gray-300 hidden sm:block">+</span>}
                             <div className="flex flex-col items-center gap-1.5 w-28">
                               {/* Image */}
-                              <div className="w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
+                              <Link href={`/products/${p.id}`} className="w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 block hover:opacity-80 transition-opacity">
                                 {thumb
                                   // eslint-disable-next-line @next/next/no-img-element
                                   ? <img src={thumb} alt={p.name} className="w-full h-full object-cover" />
                                   : <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">📦</div>
                                 }
-                              </div>
+                              </Link>
                               {/* Name + price */}
                               <p className="text-xs font-semibold text-gray-800 text-center line-clamp-2 leading-tight">{p.name.split(',')[0]}</p>
                               <p className="text-xs text-gray-400">

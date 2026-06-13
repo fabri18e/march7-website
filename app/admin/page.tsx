@@ -294,7 +294,10 @@ function ProductForm({ initial, onSave, onCancel }: {
       });
       const data = await res.json();
       if (!res.ok) { setErr(data.error || 'Error saving'); setSaving(false); return; }
-      onSave(initial ? { ...initial, ...body } as DBProduct : data.product);
+      const savedProduct = initial
+        ? { ...initial, ...body, id: data.newId ?? initial.id } as DBProduct
+        : data.product;
+      onSave(savedProduct, data.newId ? initial?.id : undefined);
       setSaving(false);
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Network error — check your connection');
@@ -1204,10 +1207,11 @@ function ProductsTab() {
       .then(d => { setProducts(d.products ?? []); setLoading(false); });
   }, []);
 
-  const handleSave = useCallback((p: DBProduct) => {
+  const handleSave = useCallback((p: DBProduct, oldId?: string) => {
     setProducts(prev => {
-      const exists = prev.find(x => x.id === p.id);
-      return exists ? prev.map(x => x.id === p.id ? p : x) : [p, ...prev];
+      const idToReplace = oldId ?? p.id;
+      const exists = prev.find(x => x.id === idToReplace);
+      return exists ? prev.map(x => x.id === idToReplace ? p : x) : [p, ...prev];
     });
     setShowForm(false); setEditing(null); setShowBundleForm(false);
   }, []);
