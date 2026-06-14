@@ -1200,6 +1200,7 @@ function ProductsTab() {
   const [syncResult, setSyncResult] = useState<string>('');
   const [syncIds, setSyncIds] = useState<string[]>([]);
   const [compressing, setCompressing] = useState(false);
+  const [compressProgress, setCompressProgress] = useState('');
   const [showSyncIds, setShowSyncIds] = useState(false);
 
   useEffect(() => {
@@ -1311,14 +1312,23 @@ function ProductsTab() {
             onClick={async () => {
               setCompressing(true);
               setSyncResult('');
+              setCompressProgress('');
+              const headers = { 'x-admin-secret': process.env.NEXT_PUBLIC_ADMIN_SECRET || '', 'Content-Type': 'application/json' };
               try {
-                const res = await fetch('/api/admin/compress-images', {
-                  method: 'POST',
-                  headers: { 'x-admin-secret': process.env.NEXT_PUBLIC_ADMIN_SECRET || '' },
-                });
-                const data = await res.json();
-                if (data.error) setSyncResult(`Error: ${data.error}`);
-                else setSyncResult(`🖼 Compressed ${data.compressed} images, skipped ${data.skipped} (already small)${data.failed?.length ? `, failed ${data.failed.length}` : ''}`);
+                const listRes = await fetch('/api/admin/compress-images', { headers });
+                const { files, error } = await listRes.json();
+                if (error) { setSyncResult(`Error: ${error}`); return; }
+                let done = 0, skipped = 0, failed = 0;
+                for (const filename of files) {
+                  setCompressProgress(`${done + skipped + failed + 1}/${files.length} — ${filename}`);
+                  const res = await fetch('/api/admin/compress-images', { method: 'POST', headers, body: JSON.stringify({ filename }) });
+                  const data = await res.json();
+                  if (data.status === 'ok') done++;
+                  else if (data.status === 'skipped') skipped++;
+                  else failed++;
+                }
+                setSyncResult(`🖼 Compressed ${done}, skipped ${skipped} (already small)${failed ? `, failed ${failed}` : ''}`);
+                setCompressProgress('');
               } catch (e) {
                 setSyncResult(`Error: ${e}`);
               } finally {
@@ -1328,7 +1338,7 @@ function ProductsTab() {
             disabled={compressing}
             className="border border-gray-300 text-gray-600 hover:bg-gray-50 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl transition-colors whitespace-nowrap disabled:opacity-50"
           >
-            {compressing ? 'Compressing...' : '🖼 Compress Images'}
+            {compressing ? (compressProgress || 'Loading...') : '🖼 Compress Images'}
           </button>
           <button
             onClick={() => setShowBundleForm(true)}
