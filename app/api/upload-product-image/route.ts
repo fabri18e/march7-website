@@ -16,10 +16,9 @@ export async function POST(req: NextRequest) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  // Resize to max 1200px and convert to WebP at 85% quality
   const compressed = await sharp(buffer)
-    .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: 92 })
+    .resize(1000, 1000, { fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 80 })
     .toBuffer();
 
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
