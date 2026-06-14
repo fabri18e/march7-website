@@ -1199,6 +1199,7 @@ function ProductsTab() {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string>('');
   const [syncIds, setSyncIds] = useState<string[]>([]);
+  const [compressing, setCompressing] = useState(false);
   const [showSyncIds, setShowSyncIds] = useState(false);
 
   useEffect(() => {
@@ -1305,6 +1306,29 @@ function ProductsTab() {
             className="border border-gray-300 text-gray-600 hover:bg-gray-50 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl transition-colors whitespace-nowrap disabled:opacity-50"
           >
             {syncing ? 'Syncing...' : '🛍 Sync Merchant'}
+          </button>
+          <button
+            onClick={async () => {
+              setCompressing(true);
+              setSyncResult('');
+              try {
+                const res = await fetch('/api/admin/compress-images', {
+                  method: 'POST',
+                  headers: { 'x-admin-secret': process.env.NEXT_PUBLIC_ADMIN_SECRET || '' },
+                });
+                const data = await res.json();
+                if (data.error) setSyncResult(`Error: ${data.error}`);
+                else setSyncResult(`🖼 Compressed ${data.compressed} images, skipped ${data.skipped} (already small)${data.failed?.length ? `, failed ${data.failed.length}` : ''}`);
+              } catch (e) {
+                setSyncResult(`Error: ${e}`);
+              } finally {
+                setCompressing(false);
+              }
+            }}
+            disabled={compressing}
+            className="border border-gray-300 text-gray-600 hover:bg-gray-50 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl transition-colors whitespace-nowrap disabled:opacity-50"
+          >
+            {compressing ? 'Compressing...' : '🖼 Compress Images'}
           </button>
           <button
             onClick={() => setShowBundleForm(true)}
