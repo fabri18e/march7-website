@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useCallback } from 'react';
 import { PageLoader, Dots } from '@/components/Spinner';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -47,28 +47,41 @@ function TrackContent() {
   const [order, setOrder] = useState<OrderResult | null>(null);
   const [error, setError] = useState('');
 
+  const doSearch = useCallback(async (emailVal: string, orderVal: string) => {
+    if (!emailVal.trim() || !orderVal.trim()) return;
+    setLoading(true);
+    setError('');
+    setOrder(null);
+    const res = await fetch(
+      `/api/track-order?email=${encodeURIComponent(emailVal.trim())}&order=${encodeURIComponent(orderVal.trim())}`
+    );
+    const data = await res.json();
+    setLoading(false);
+    if (!res.ok) { setError(data.error || 'Something went wrong.'); return; }
+    setOrder(data.order);
+  }, []);
+
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    const orderParam = searchParams.get('order');
+    if (emailParam && orderParam) doSearch(emailParam, orderParam);
+  }, [doSearch, searchParams]);
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !orderCode.trim()) {
       setError('Please enter both your email and order number.');
       return;
     }
-    setLoading(true);
-    setError('');
-    setOrder(null);
-
-    const res = await fetch(
-      `/api/track-order?email=${encodeURIComponent(email.trim())}&order=${encodeURIComponent(orderCode.trim())}`
-    );
-    const data = await res.json();
-    setLoading(false);
-
-    if (!res.ok) {
-      setError(data.error || 'Something went wrong.');
-      return;
-    }
-    setOrder(data.order);
+    await doSearch(email, orderCode);
   };
+
+  const [copied, setCopied] = useState(false);
+  const copyTracking = useCallback((num: string) => {
+    navigator.clipboard.writeText(num);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, []);
 
   const stepIndex = order ? STATUS_STEPS.indexOf(order.status) : -1;
   const isTerminal = order && ['refunded', 'cancelled'].includes(order.status);
@@ -186,9 +199,26 @@ function TrackContent() {
                           {STATUS_LABELS[step]}
                         </p>
                         {active && step === 'shipped' && order.tracking_number && (
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            Tracking: <span className="font-mono font-semibold">{order.tracking_number}</span>
-                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-gray-500 font-mono font-semibold">{order.tracking_number}</span>
+                            <button
+                              onClick={() => copyTracking(order.tracking_number!)}
+                              className="text-xs text-accent hover:text-accent-hover transition-colors flex items-center gap-1"
+                              title="Copy tracking number"
+                            >
+                              {copied ? (
+                                <span className="text-green-500">✓ Copied</span>
+                              ) : (
+                                <>
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2"/>
+                                    <path strokeWidth="2" strokeLinecap="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                                  </svg>
+                                  Copy
+                                </>
+                              )}
+                            </button>
+                          </div>
                         )}
                         {active && step === 'shipped' && order.estimated_delivery && (
                           <p className="text-xs text-gray-400 mt-0.5">

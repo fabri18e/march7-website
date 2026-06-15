@@ -6,6 +6,7 @@ import {
   sendOrderDelivered,
   sendOrderRefunded,
   sendOrderCancelled,
+  sendEmailCorrected,
 } from '@/lib/email';
 
 export async function GET() {
@@ -63,6 +64,21 @@ export async function PATCH(req: Request) {
         else if (fields.status === 'cancelled') await sendOrderCancelled(emailData);
       } catch (err) {
         console.error(`[email:${fields.status}]`, err);
+      }
+    }
+
+    // Email corrected by admin — notify the new address
+    if (fields.email && fields.email !== order.email) {
+      try {
+        await sendEmailCorrected({
+          to: fields.email,
+          orderId: order.stripe_session_id,
+          items: order.items ?? [],
+          totalAmount: order.total_amount ?? 0,
+          oldEmail: order.email,
+        });
+      } catch (err) {
+        console.error('[email:corrected]', err);
       }
     }
 

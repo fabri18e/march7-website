@@ -252,6 +252,8 @@ export async function sendOrderShipped({
   to: string; orderId: string; items: OrderItem[]; totalAmount: number;
   trackingNumber?: string | null; trackingUrl?: string | null; estimatedDelivery?: string | null;
 }) {
+  const orderCode = orderId.replace('paypal_', '').slice(-10).toUpperCase();
+  const trackPageUrl = `${SITE_URL}/track?email=${encodeURIComponent(to)}&order=${orderCode}`;
   const trackingBlock = trackingNumber ? `
     <div style="margin:0 32px 24px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:16px 20px;text-align:center">
       <p style="margin:0 0 4px;font-size:12px;color:#3B82F6;text-transform:uppercase;letter-spacing:0.05em">Tracking Number</p>
@@ -272,7 +274,7 @@ export async function sendOrderShipped({
     ${trackingBlock}
     <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/track`, 'Track My Order →')}
+      ${ctaButton(trackPageUrl, 'Track My Order →')}
     </div>`);
 
   return sendEmail({ to, subject: 'Your March7 order has shipped 📦', html });
@@ -346,6 +348,59 @@ export async function sendOrderRefunded({
     </div>`);
 
   return sendEmail({ to, subject: 'Your March7 refund has been processed 💸', html });
+}
+
+// ─── 6b. Email Corrected ─────────────────────────────────────────────────────
+
+export async function sendEmailCorrected({
+  to, orderId, items, totalAmount, oldEmail,
+}: {
+  to: string; orderId: string; items: OrderItem[]; totalAmount: number; oldEmail: string;
+}) {
+  const html = emailLayout(`
+    <div style="padding:40px 32px 24px;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">✉️</div>
+      <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">We Finally Reached You!</h1>
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">
+        First of all, thank you so much for your purchase — it means a lot to us.
+      </p>
+      ${orderBadge(orderId)}
+    </div>
+
+    <div style="margin:0 32px 24px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:20px 22px">
+      <p style="margin:0 0 10px;font-size:14px;font-weight:700;color:#92400E">Why did it take us a while to reach you?</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#78350F;line-height:1.6">
+        When you placed your order, the email address entered was
+        <strong style="font-family:monospace">${oldEmail}</strong>,
+        which unfortunately wasn't a valid address — so none of our order updates reached you.
+      </p>
+      <p style="margin:0;font-size:14px;color:#78350F;line-height:1.6">
+        This happens sometimes with a small typo during checkout. We noticed it and corrected it on our end so you can now receive all future updates right here at <strong>${to}</strong>.
+      </p>
+    </div>
+
+    <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
+
+    <div style="padding:0 32px 12px">
+      <p style="margin:0 0 16px;font-size:14px;color:#374151;text-align:center">
+        You can now track your order status at any time using the button below:
+      </p>
+    </div>
+    <div style="padding:0 32px 32px;text-align:center">
+      ${ctaButton(`${SITE_URL}/track`, 'Track My Order →')}
+    </div>
+
+    <div style="margin:0 32px 28px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 18px;text-align:center">
+      <p style="margin:0;font-size:13px;color:#15803D">
+        We sincerely apologize for any confusion this may have caused. If you have any questions, don't hesitate to reach out — we're happy to help.
+      </p>
+    </div>`);
+
+  return sendEmail({
+    to,
+    subject: 'An important update about your March7 order',
+    html,
+  });
 }
 
 // ─── 6. Cancelled ────────────────────────────────────────────────────────────

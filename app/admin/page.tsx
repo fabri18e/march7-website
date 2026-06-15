@@ -1459,6 +1459,8 @@ export default function AdminPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
   const [expandedFulfill, setExpandedFulfill] = useState<Set<string>>(new Set());
+  const [editingEmail, setEditingEmail] = useState<{ id: string; value: string } | null>(null);
+  const [savingEmail, setSavingEmail] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) router.replace('/');
@@ -1484,6 +1486,17 @@ export default function AdminPage() {
     });
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
     setUpdatingId(null);
+  }, []);
+
+  const saveEmail = useCallback(async (orderId: string, email: string) => {
+    setSavingEmail(true);
+    await fetch('/api/admin/orders', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, email }),
+    });
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, email } : o));
+    setSavingEmail(false);
+    setEditingEmail(null);
   }, []);
 
   const toggleFulfill = useCallback((id: string) => {
@@ -1611,7 +1624,35 @@ export default function AdminPage() {
                           {needsFulfill && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-600">Needs fulfillment</span>}
                           <span className="font-bold text-gray-900 ml-auto">${(order.total_amount / 100).toFixed(2)}</span>
                         </div>
-                        <p className="text-sm font-medium text-gray-700 truncate">{order.email}</p>
+                        {editingEmail?.id === order.id ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="email"
+                              value={editingEmail.value}
+                              onChange={e => setEditingEmail({ id: order.id, value: e.target.value })}
+                              onKeyDown={e => { if (e.key === 'Enter') saveEmail(order.id, editingEmail.value); if (e.key === 'Escape') setEditingEmail(null); }}
+                              className="text-sm border border-accent rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-accent flex-1 min-w-0"
+                              autoFocus
+                            />
+                            <button onClick={() => saveEmail(order.id, editingEmail.value)} disabled={savingEmail} className="text-xs bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold px-2.5 py-1 rounded-lg transition-colors">
+                              {savingEmail ? '...' : 'Save'}
+                            </button>
+                            <button onClick={() => setEditingEmail(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1">✕</button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 group">
+                            <p className="text-sm font-medium text-gray-700 truncate">{order.email}</p>
+                            <button
+                              onClick={() => setEditingEmail({ id: order.id, value: order.email })}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-accent flex-shrink-0"
+                              title="Edit email"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                              </svg>
+                            </button>
+                          </div>
+                        )}
                         <p className="text-xs text-gray-400 line-clamp-2">{order.items.map(i => `${i.quantity}× ${i.name}`).join(', ')}</p>
                         <p className="text-xs text-gray-400">
                           {new Date(order.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
