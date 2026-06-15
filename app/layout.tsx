@@ -45,6 +45,9 @@ export const metadata: Metadata = {
     icon: '/images/logo_tab.png',
     apple: '/images/logo_tab.png',
   },
+  alternates: {
+    canonical: siteUrl,
+  },
   robots: {
     index: true,
     follow: true,
