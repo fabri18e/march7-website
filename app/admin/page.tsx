@@ -177,6 +177,57 @@ function FulfillPanel({ order, products }: { order: Order; products: DBProduct[]
   );
 }
 
+// ── Address editor ─────────────────────────────────────────────────
+function AddressEditor({ order, onSave }: {
+  order: Order;
+  onSave: (u: Partial<Order> & { id: string }) => void;
+}) {
+  const addr = order.shipping_address ?? {};
+  const [form, setForm] = useState({
+    name: addr.name ?? '',
+    line1: addr.line1 ?? '',
+    line2: addr.line2 ?? '',
+    city: addr.city ?? '',
+    state: addr.state ?? '',
+    postal_code: addr.postal_code ?? '',
+    country: addr.country ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const set = (k: keyof typeof form, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  const save = async () => {
+    setSaving(true);
+    await fetch('/api/admin/orders', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: order.id, shipping_address: form }),
+    });
+    onSave({ id: order.id, shipping_address: form });
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+
+  const inp = 'text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-accent w-full';
+
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-50 space-y-2">
+      <p className="text-xs font-semibold text-gray-500">Shipping Address</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <input className={inp} value={form.name} onChange={e => set('name', e.target.value)} placeholder="Full name" />
+        <input className={inp} value={form.line1} onChange={e => set('line1', e.target.value)} placeholder="Address line 1" />
+        <input className={inp} value={form.line2} onChange={e => set('line2', e.target.value)} placeholder="Address line 2 (optional)" />
+        <input className={inp} value={form.city} onChange={e => set('city', e.target.value)} placeholder="City" />
+        <input className={inp} value={form.state} onChange={e => set('state', e.target.value)} placeholder="State" />
+        <input className={inp} value={form.postal_code} onChange={e => set('postal_code', e.target.value)} placeholder="Postal code" />
+        <input className={inp} value={form.country} onChange={e => set('country', e.target.value)} placeholder="Country" />
+      </div>
+      <button onClick={save} disabled={saving} className="text-xs bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors">
+        {saved ? '✓ Saved & email sent' : saving ? '...' : 'Save & notify customer'}
+      </button>
+    </div>
+  );
+}
+
 // ── Tracking form ──────────────────────────────────────────────────
 function TrackingForm({ order, onSave }: {
   order: Order;
@@ -1450,7 +1501,7 @@ function ProductsTab() {
 export default function AdminPage() {
   const { user, loading: authLoading, isAdmin } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<'orders' | 'products' | 'reviews'>('orders');
+  const [tab, setTab] = useState<'orders' | 'products' | 'reviews' | 'messages'>('orders');
   const [orders, setOrders] = useState<Order[]>([]);
   const [adminProducts, setAdminProducts] = useState<DBProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1459,8 +1510,11 @@ export default function AdminPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
   const [expandedFulfill, setExpandedFulfill] = useState<Set<string>>(new Set());
+  const [expandedAddress, setExpandedAddress] = useState<Set<string>>(new Set());
   const [editingEmail, setEditingEmail] = useState<{ id: string; value: string } | null>(null);
   const [savingEmail, setSavingEmail] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [reminderSent, setReminderSent] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) router.replace('/');
@@ -1505,6 +1559,25 @@ export default function AdminPage() {
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+  }, []);
+
+  const toggleAddress = useCallback((id: string) => {
+    setExpandedAddress(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
+  const sendReminder = useCallback(async (orderId: string) => {
+    setSendingReminder(orderId);
+    await fetch('/api/admin/orders', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, action: 'reminder' }),
+    });
+    setSendingReminder(null);
+    setReminderSent(orderId);
+    setTimeout(() => setReminderSent(null), 3000);
   }, []);
 
   const deleteOrder = useCallback(async (id: string) => {
@@ -1552,10 +1625,10 @@ export default function AdminPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-gray-100">
-        {(['orders', 'products', 'reviews'] as const).map(t => (
+        {(['orders', 'products', 'reviews', 'messages'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-semibold capitalize transition-colors border-b-2 -mb-px ${tab === t ? 'border-accent text-accent' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>
-            {t === 'orders' ? `Orders (${orders.length})` : t === 'reviews' ? 'Reviews' : 'Products'}
+            {t === 'orders' ? `Orders (${orders.length})` : t === 'reviews' ? 'Reviews' : t === 'messages' ? '✉️ Messages' : 'Products'}
           </button>
         ))}
       </div>
@@ -1666,6 +1739,17 @@ export default function AdminPage() {
                             {fulfillOpen ? 'Hide Fulfill' : 'Fulfill'}
                           </button>
                         )}
+                        <button
+                          onClick={() => toggleAddress(order.id)}
+                          className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${expandedAddress.has(order.id) ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'}`}>
+                          📬 Dirección
+                        </button>
+                        <button
+                          onClick={() => sendReminder(order.id)}
+                          disabled={sendingReminder === order.id || reminderSent === order.id}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-purple-200 text-purple-600 hover:bg-purple-50 disabled:opacity-60 transition-colors bg-white">
+                          {reminderSent === order.id ? '✓ Enviado' : sendingReminder === order.id ? '...' : '🔔 Recordatorio'}
+                        </button>
                         <select value={order.status} disabled={updatingId === order.id}
                           onChange={e => updateStatus(order.id, e.target.value)}
                           className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-accent bg-white">
@@ -1682,6 +1766,9 @@ export default function AdminPage() {
                         </button>
                       </div>
                       {needsFulfill && fulfillOpen && <FulfillPanel order={order} products={adminProducts} />}
+                      {expandedAddress.has(order.id) && (
+                        <AddressEditor order={order} onSave={u => setOrders(prev => prev.map(o => o.id === u.id ? { ...o, ...u } : o))} />
+                      )}
                       {['shipped', 'delivered'].includes(order.status) && (
                         <TrackingForm order={order} onSave={u => setOrders(prev => prev.map(o => o.id === u.id ? { ...o, ...u } : o))} />
                       )}
@@ -1699,6 +1786,122 @@ export default function AdminPage() {
 
       {/* Reviews tab */}
       {tab === 'reviews' && <ReviewsTab products={adminProducts} onProductsChange={setAdminProducts} />}
+
+      {/* Messages tab */}
+      {tab === 'messages' && <MessagesTab orders={orders} />}
+    </div>
+  );
+}
+
+// ── Messages tab ───────────────────────────────────────────────────
+function MessagesTab({ orders }: { orders: Order[] }) {
+  const [to, setTo] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const recentEmails = Array.from(new Set(orders.map(o => o.email).filter(Boolean))).slice(0, 10);
+
+  const send = async () => {
+    if (!to.trim() || !subject.trim() || !message.trim()) {
+      setError('Completá todos los campos antes de enviar.');
+      return;
+    }
+    setSending(true);
+    setError('');
+    const res = await fetch('/api/admin/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: to.trim(), subject: subject.trim(), message: message.trim() }),
+    });
+    const data = await res.json();
+    setSending(false);
+    if (!res.ok) { setError(data.error || 'Error al enviar'); return; }
+    setSent(true);
+    setTo(''); setSubject(''); setMessage('');
+    setTimeout(() => setSent(false), 4000);
+  };
+
+  const inp = 'w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent';
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <h2 className="text-sm font-bold text-gray-900 mb-1">Nuevo mensaje</h2>
+        <p className="text-xs text-gray-400">El correo se enviará con el diseño de March7.</p>
+      </div>
+
+      {/* Quick pick from recent customers */}
+      {recentEmails.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-gray-500 mb-2">Clientes recientes</p>
+          <div className="flex flex-wrap gap-2">
+            {recentEmails.map(email => (
+              <button
+                key={email}
+                onClick={() => setTo(email)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${to === email ? 'bg-accent text-white border-accent' : 'bg-white border-gray-200 text-gray-600 hover:border-accent hover:text-accent'}`}
+              >
+                {email}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 mb-1.5">Para</label>
+          <input
+            type="email"
+            value={to}
+            onChange={e => setTo(e.target.value)}
+            placeholder="cliente@email.com"
+            className={inp}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 mb-1.5">Asunto</label>
+          <input
+            type="text"
+            value={subject}
+            onChange={e => setSubject(e.target.value)}
+            placeholder="Ej: An update on your order"
+            className={inp}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 mb-1.5">Mensaje</label>
+          <textarea
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            placeholder={"Hi! We wanted to let you know that..."}
+            rows={8}
+            className={`${inp} resize-y`}
+          />
+          <p className="text-xs text-gray-400 mt-1">Los saltos de línea se respetan en el email.</p>
+        </div>
+
+        {error && <p className="text-sm text-red-500 bg-red-50 px-3 py-2.5 rounded-xl">{error}</p>}
+        {sent && <p className="text-sm text-green-600 bg-green-50 px-3 py-2.5 rounded-xl">✓ Email enviado correctamente.</p>}
+
+        <button
+          onClick={send}
+          disabled={sending}
+          className="w-full bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+        >
+          {sending ? 'Enviando...' : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              Enviar mensaje
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

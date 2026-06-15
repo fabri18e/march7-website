@@ -411,6 +411,18 @@ export async function sendEmailCorrected({
   });
 }
 
+// ─── Custom Message ───────────────────────────────────────────────────────────
+
+export async function sendCustomEmail({
+  to, subject, message,
+}: { to: string; subject: string; message: string }) {
+  const html = emailLayout(`
+    <div style="padding:40px 32px 32px">
+      <p style="margin:0;font-size:15px;color:#374151;line-height:1.8;white-space:pre-line">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+    </div>`);
+  return sendEmail({ to, subject, html });
+}
+
 // ─── 6. Cancelled ────────────────────────────────────────────────────────────
 
 export async function sendOrderCancelled({
@@ -432,4 +444,84 @@ export async function sendOrderCancelled({
     </div>`);
 
   return sendEmail({ to, subject: 'Your March7 order has been cancelled', html });
+}
+
+// ─── 7. Order Reminder ───────────────────────────────────────────────────────
+
+export async function sendOrderReminder({
+  to, orderId, items, totalAmount, status,
+}: {
+  to: string; orderId: string; items: OrderItem[]; totalAmount: number; status: string;
+}) {
+  const orderCode = orderId.replace('paypal_', '').slice(-10).toUpperCase();
+  const trackPageUrl = `${SITE_URL}/track?email=${encodeURIComponent(to)}&order=${orderCode}`;
+
+  const statusText = status === 'shipped'
+    ? 'on its way to you'
+    : 'being prepared';
+
+  const html = emailLayout(`
+    <div style="padding:40px 32px 24px;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">👋</div>
+      <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Just checking in!</h1>
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">
+        We wanted to give you a quick update on your order — it's moving along and we don't want you to miss a thing.
+      </p>
+      ${orderBadge(orderId)}
+    </div>
+    <div style="padding:0 32px 28px">${itemsTable(items, totalAmount)}</div>
+    <div style="margin:0 32px 24px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;text-align:center">
+      <p style="margin:0;font-size:14px;color:#1D4ED8">
+        Your order is currently <strong>${statusText}</strong>. Click below anytime to see the latest status of your shipment.
+      </p>
+    </div>
+    <div style="padding:0 32px 32px;text-align:center">
+      ${ctaButton(trackPageUrl, 'Track My Order →')}
+    </div>`);
+
+  return sendEmail({ to, subject: 'Just a quick update on your March7 order 👋', html });
+}
+
+// ─── 8. Shipping Address Changed ─────────────────────────────────────────────
+
+export async function sendAddressChanged({
+  to, orderId, newAddress,
+}: {
+  to: string; orderId: string;
+  newAddress: { name?: string; line1?: string; line2?: string; city?: string; state?: string; postal_code?: string; country?: string };
+}) {
+  const orderCode = orderId.replace('paypal_', '').slice(-10).toUpperCase();
+  const addressLines = [
+    newAddress.name,
+    newAddress.line1,
+    newAddress.line2,
+    [newAddress.city, newAddress.state, newAddress.postal_code].filter(Boolean).join(', '),
+    newAddress.country,
+  ].filter(Boolean).join('<br>');
+
+  const html = emailLayout(`
+    <div style="padding:40px 32px 24px;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">📬</div>
+      <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;color:#111827">Shipping Address Updated</h1>
+      <p style="margin:0 0 16px;color:#6B7280;font-size:15px">
+        The shipping address for your order has been successfully updated.
+      </p>
+      ${orderBadge(orderId)}
+    </div>
+    <div style="margin:0 32px 24px">
+      <p style="margin:0 0 8px;font-size:11px;color:#9CA3AF;text-transform:uppercase">New shipping address</p>
+      <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:14px 18px;font-size:14px;color:#374151;line-height:1.8">
+        ${addressLines}
+      </div>
+    </div>
+    <div style="margin:0 32px 28px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px 18px;text-align:center">
+      <p style="margin:0;font-size:13px;color:#DC2626">
+        If you did not request this change, please <a href="mailto:${FROM_EMAIL}" style="color:#DC2626;font-weight:700">contact support immediately</a>.
+      </p>
+    </div>
+    <div style="padding:0 32px 32px;text-align:center">
+      ${ctaButton(`mailto:${FROM_EMAIL}`, 'Contact Support →', '#6B7280')}
+    </div>`);
+
+  return sendEmail({ to, subject: `Shipping address updated for order #${orderCode}`, html });
 }

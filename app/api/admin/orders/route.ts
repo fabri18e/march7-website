@@ -7,6 +7,8 @@ import {
   sendOrderRefunded,
   sendOrderCancelled,
   sendEmailCorrected,
+  sendOrderReminder,
+  sendAddressChanged,
 } from '@/lib/email';
 
 export async function GET() {
@@ -22,7 +24,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   const body = await req.json();
-  const { orderId, ...fields } = body;
+  const { orderId, action, ...fields } = body;
 
   const supabase = getSupabaseAdmin();
 
@@ -32,6 +34,23 @@ export async function PATCH(req: Request) {
     .select('*')
     .eq('id', orderId)
     .single();
+
+  // Reminder — no DB update needed
+  if (action === 'reminder' && order) {
+    try {
+      await sendOrderReminder({
+        to: order.email,
+        orderId: order.stripe_session_id,
+        items: order.items ?? [],
+        totalAmount: order.total_amount ?? 0,
+        status: order.status,
+      });
+    } catch (err) {
+      console.error('[email:reminder]', err);
+      return NextResponse.json({ error: 'Failed to send reminder' }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true });
+  }
 
   // Save changes
   const { error } = await supabase
@@ -64,6 +83,19 @@ export async function PATCH(req: Request) {
         else if (fields.status === 'cancelled') await sendOrderCancelled(emailData);
       } catch (err) {
         console.error(`[email:${fields.status}]`, err);
+      }
+    }
+
+    // Shipping address changed — notify customer
+    if (fields.shipping_address && order.email) {
+      try {
+        await sendAddressChanged({
+          to: order.email,
+          orderId: order.stripe_session_id,
+          newAddress: fields.shipping_address,
+        });
+      } catch (err) {
+        console.error('[email:address-changed]', err);
       }
     }
 
