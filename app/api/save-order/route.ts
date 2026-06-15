@@ -53,7 +53,9 @@ export async function POST(req: NextRequest) {
       .eq('stripe_session_id', session.id)
       .maybeSingle();
 
-    if (existing) return NextResponse.json({ ok: true, totalAmount, orderItems });
+    const existingEmail = session.customer_details?.email || session.metadata?.email || '';
+    const existingCode = session.id.replace('paypal_', '').slice(-10).toUpperCase();
+    if (existing) return NextResponse.json({ ok: true, totalAmount, orderItems, email: existingEmail, orderCode: existingCode });
 
     const { error } = await supabase.from('orders').insert({
       stripe_session_id: session.id,
@@ -88,7 +90,8 @@ export async function POST(req: NextRequest) {
       shippingAddress: session.collected_information?.shipping_details?.address as unknown as Record<string, string | null> ?? null,
     }).catch(err => console.error('[email:admin-alert]', err));
 
-    return NextResponse.json({ ok: true, totalAmount, orderItems });
+    const orderCode = session.id.replace('paypal_', '').slice(-10).toUpperCase();
+    return NextResponse.json({ ok: true, totalAmount, orderItems, email: customerEmail || '', orderCode });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[save-order]', message);

@@ -14,6 +14,7 @@ function SuccessContent() {
   const sessionId = searchParams.get('session_id');
   const saved = useRef(false);
   const [saveError, setSaveError] = useState('');
+  const [trackUrl, setTrackUrl] = useState('/track');
 
   useEffect(() => {
     // Clear cart directly from localStorage — works regardless of when items load
@@ -33,6 +34,9 @@ function SuccessContent() {
         .then(data => {
           if (data.error) setSaveError(data.error);
           else {
+            if (data.email && data.orderCode) {
+              setTrackUrl(`/track?email=${encodeURIComponent(data.email)}&order=${data.orderCode}`);
+            }
             const amount = data.totalAmount ? data.totalAmount / 100 : 0;
             const items = (data.orderItems || []).map((i: { product_id: string | null; name: string; quantity: number }) => ({
               id: i.product_id ?? '',
@@ -82,7 +86,7 @@ function SuccessContent() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/track" className="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          <Link href={trackUrl} className="bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-xl transition-colors">
             Track My Order
           </Link>
           <Link href="/products" className="border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-colors">
