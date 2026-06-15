@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense, useCallback } from 'react';
+import { useState, Suspense, useCallback, useEffect } from 'react';
 import { PageLoader, Dots } from '@/components/Spinner';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
