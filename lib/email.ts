@@ -204,6 +204,8 @@ export async function sendAdminDisputeAlert({
 export async function sendOrderConfirmation({
   to, orderId, items, totalAmount,
 }: { to: string; orderId: string; items: OrderItem[]; totalAmount: number }) {
+  const orderCode = orderId.replace('paypal_', '').slice(-10).toUpperCase();
+  const trackPageUrl = `${SITE_URL}/track?email=${encodeURIComponent(to)}&order=${orderCode}`;
   const html = emailLayout(`
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">🎉</div>
@@ -213,7 +215,7 @@ export async function sendOrderConfirmation({
     </div>
     <div style="padding:0 32px 32px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/track`, 'View My Order →')}
+      ${ctaButton(trackPageUrl, 'View My Order →')}
     </div>
     <div style="margin:0 32px 28px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 18px">
       <p style="margin:0;font-size:13px;color:#15803D;text-align:center">
@@ -229,6 +231,8 @@ export async function sendOrderConfirmation({
 export async function sendOrderProcessing({
   to, orderId, items, totalAmount,
 }: { to: string; orderId: string; items: OrderItem[]; totalAmount: number }) {
+  const orderCode = orderId.replace('paypal_', '').slice(-10).toUpperCase();
+  const trackPageUrl = `${SITE_URL}/track?email=${encodeURIComponent(to)}&order=${orderCode}`;
   const html = emailLayout(`
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">⚙️</div>
@@ -238,7 +242,7 @@ export async function sendOrderProcessing({
     </div>
     <div style="padding:0 32px 32px">${itemsTable(items, totalAmount)}</div>
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/track`, 'Track My Order →')}
+      ${ctaButton(trackPageUrl, 'Track My Order →')}
     </div>`);
 
   return sendEmail({ to, subject: 'Your March7 order is being processed ⚙️', html });
@@ -285,6 +289,8 @@ export async function sendOrderShipped({
 export async function sendOrderDelivered({
   to, orderId, items, totalAmount,
 }: { to: string; orderId: string; items: OrderItem[]; totalAmount: number }) {
+  const orderCode = orderId.replace('paypal_', '').slice(-10).toUpperCase();
+  const trackPageUrl = `${SITE_URL}/track?email=${encodeURIComponent(to)}&order=${orderCode}`;
   const reviewButtons = items
     .filter(item => item.product_id)
     .map(item => `
@@ -313,7 +319,7 @@ export async function sendOrderDelivered({
     </div>` : ''}
 
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/track`, 'View My Orders →')}
+      ${ctaButton(trackPageUrl, 'View My Orders →')}
     </div>
     <div style="margin:0 32px 28px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px 18px;text-align:center">
       <p style="margin:0;font-size:13px;color:#C2410C">
@@ -357,6 +363,8 @@ export async function sendEmailCorrected({
 }: {
   to: string; orderId: string; items: OrderItem[]; totalAmount: number; oldEmail: string;
 }) {
+  const orderCode = orderId.replace('paypal_', '').slice(-10).toUpperCase();
+  const trackPageUrl = `${SITE_URL}/track?email=${encodeURIComponent(to)}&order=${orderCode}`;
   const html = emailLayout(`
     <div style="padding:40px 32px 24px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">✉️</div>
@@ -387,7 +395,7 @@ export async function sendEmailCorrected({
       </p>
     </div>
     <div style="padding:0 32px 32px;text-align:center">
-      ${ctaButton(`${SITE_URL}/track`, 'Track My Order →')}
+      ${ctaButton(trackPageUrl, 'Track My Order →')}
     </div>
 
     <div style="margin:0 32px 28px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 18px;text-align:center">
